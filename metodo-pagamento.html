@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NexPay · Premium Checkout</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            /* Sua Paleta Reduzida e Sofisticada */
+            --bg-light: #F2F2F2;
+            --brand-main: #F21B2D;
+            --brand-dark: #8C0D0D;
+            
+            --text-main: #1a1a1a;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Degradê usando EXCLUSIVAMENTE as cores solicitadas */
+            background: linear-gradient(135deg, 
+                var(--bg-light) 0%, 
+                var(--brand-main) 50%, 
+                var(--brand-dark) 100%
+            );
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-main);
+        }
+
+        .checkout-wrapper {
+            width: 100%;
+            max-width: 500px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .checkout-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .checkout-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .checkout-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--brand-dark);
+            margin-top: 5px;
+        }
+
+        .amount-badge {
+            background: var(--bg-light);
+            color: var(--brand-main);
+            padding: 12px 25px;
+            border-radius: 15px;
+            display: inline-block;
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 15px;
+            border: 1px solid rgba(242, 27, 45, 0.2);
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .method-card {
+            flex: 1;
+            background: var(--white);
+            border: 2px solid var(--bg-light);
+            border-radius: 18px;
+            padding: 15px 5px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+        }
+
+        .method-card i {
+            font-size: 22px;
+            margin-bottom: 8px;
+            color: #ccc;
+            transition: color 0.3s;
+        }
+
+        .method-card span {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .method-card.active {
+            border-color: var(--brand-main);
+            background: #fff;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(242, 27, 45, 0.1);
+        }
+
+        .method-card.active i {
+            color: var(--brand-main);
+        }
+
+        .method-card.active span {
+            color: var(--brand-dark);
+        }
+
+        .payment-form {
+            background: var(--bg-light);
+            padding: 25px;
+            border-radius: 20px;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--brand-dark);
+            margin-bottom: 6px;
+            display: block;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--brand-main);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 18px;
+            background: var(--brand-main);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(242, 27, 45, 0.3);
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            background: var(--brand-dark);
+            transform: scale(1.02);
+        }
+
+        .pix-code {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-family: monospace;
+            border: 1px dashed var(--brand-main);
+            margin: 15px 0;
+            word-break: break-all;
+            color: #444;
+        }
+
+        @media (max-width: 480px) {
+            .checkout-card { padding: 20px; }
+            .payment-methods { flex-direction: row; }
+            .method-card span { font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="checkout-wrapper">
+        <div class="checkout-card">
+            <div class="checkout-header">
+                <p style="text-transform: uppercase; font-size: 10px; letter-spacing: 3px; color: var(--brand-main); font-weight: 800;">Checkout Seguro</p>
+                <h1>NexPay Premium</h1>
+                <div class="amount-badge">R$ 199,90</div>
+            </div>
+
+            <div class="payment-methods">
+                <div class="method-card active" data-method="pix" onclick="selectMethod('pix')">
+                    <i class="fa-brands fa-pix"></i>
+                    <span>Pix</span>
+                </div>
+                <div class="method-card" data-method="card" onclick="selectMethod('card')">
+                    <i class="fa-solid fa-credit-card"></i>
+                    <span>Cartão</span>
+                </div>
+                <div class="method-card" data-method="boleto" onclick="selectMethod('boleto')">
+                    <i class="fa-solid fa-barcode"></i>
+                    <span>Boleto</span>
+                </div>
+            </div>
+
+            <div id="paymentForm" class="payment-form">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        function selectMethod(method) {
+            document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
+            document.querySelector(`[data-method="${method}"]`).classList.add('active');
+            renderForm(method);
+        }
+
+        function renderForm(method) {
+            const container = document.getElementById('paymentForm');
+            if(method === 'pix') {
+                container.innerHTML = `
+                    <div style="text-align:center">
+                        <div style="background:#fff; width:140px; height:140px; margin: 0 auto 15px; border-radius:15px; display:flex; align-items:center; justify-content:center; border: 1px solid #eee;">
+                            <i class="fa-solid fa-qrcode fa-5x" style="color:var(--brand-dark)"></i>
+                        </div>
+                        <p style="font-size:13px; font-weight:600; color:#555">Copie o código abaixo:</p>
+                        <div class="pix-code">00020126580014BR.GOV.BCB.PIX0136a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0</div>
+                        <button class="btn-primary" onclick="alert('Código Copiado!')"><i class="fa-regular fa-copy"></i> Copiar Código</button>
+                    </div>
+                `;
+            } else if (method === 'card') {
+                container.innerHTML = `
+                    <div class="form-group">
+                        <label>Número do Cartão</label>
+                        <input type="text" placeholder="0000 0000 0000 0000">
+                    </div>
+                    <div style="display:flex; gap:10px">
+                        <div class="form-group" style="flex:1">
+                            <label>Validade</label>
+                            <input type="text" placeholder="MM/AA">
+                        </div>
+                        <div class="form-group" style="flex:1">
+                            <label>CVV</label>
+                            <input type="text" placeholder="123">
+                        </div>
+                    </div>
+                    <button class="btn-primary">Finalizar Compra</button>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div style="text-align:center; padding: 10px 0;">
+                        <i class="fa-solid fa-barcode fa-3x" style="color:var(--brand-dark); margin-bottom:15px"></i>
+                        <p style="font-size:14px; color:#444; line-height:1.5">O boleto será gerado e enviado para o seu e-mail.</p>
+                        <button class="btn-primary" style="margin-top:20px">Gerar Boleto Agora</button>
+                    </div>
+                `;
+            }
+        }
+        renderForm('pix');
+    </script>
+</body>
+</html>

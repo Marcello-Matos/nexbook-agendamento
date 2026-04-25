@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo - NEXBOOK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .welcome-container {
+            background: white;
+            border-radius: 24px;
+            padding: 48px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 40px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #1a202c;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 18px;
+            margin-bottom: 32px;
+        }
+
+        .trial-box {
+            background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
+            border: 2px solid #52c41a;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .trial-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(82, 196, 26, 0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .trial-icon {
+            font-size: 48px;
+            color: #52c41a;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .trial-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #237804;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .trial-text {
+            font-size: 16px;
+            color: #389e0d;
+            position: relative;
+            z-index: 1;
+        }
+
+        .trial-days {
+            font-size: 48px;
+            font-weight: 800;
+            color: #52c41a;
+            display: block;
+            margin: 8px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .features {
+            text-align: left;
+            margin-bottom: 32px;
+        }
+
+        .features h3 {
+            font-size: 18px;
+            color: #1a202c;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: transform 0.2s;
+        }
+
+        .feature-item:hover {
+            transform: translateX(4px);
+            background: #edf2f7;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .feature-text {
+            flex: 1;
+            color: #4a5568;
+            font-size: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary i {
+            font-size: 20px;
+        }
+
+        .footer-text {
+            margin-top: 24px;
+            font-size: 14px;
+            color: #a0aec0;
+        }
+
+        .footer-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        @media (max-width: 480px) {
+            .welcome-container {
+                padding: 32px 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .trial-days {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <div class="logo">
+            <i class="fas fa-calendar-check"></i>
+        </div>
+        
+        <h1>Bem-vindo ao NEXBOOK!</h1>
+        <p class="subtitle">Seu sistema de agendamento profissional</p>
+        
+        <div class="trial-box">
+            <div class="trial-icon">
+                <i class="fas fa-gift"></i>
+            </div>
+            <div class="trial-title">Periodo Gratuito Ativo!</div>
+            <div class="trial-text">Voce tem</div>
+            <div class="trial-days">7 DIAS</div>
+            <div class="trial-text">para usar todas as funcoes do sistema gratuitamente</div>
+        </div>
+        
+        <div class="features">
+            <h3>O que voce pode fazer:</h3>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="feature-text">Criar agendamentos ilimitados</div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="feature-text">Cadastrar clientes e profissionais</div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="feature-text">Enviar emails automaticos de confirmacao</div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-whatsapp"></i>
+                </div>
+                <div class="feature-text">Integracao com WhatsApp</div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="feature-text">Relatorios e insights completos</div>
+            </div>
+        </div>
+        
+        <button class="btn-primary" onclick="goToDashboard()">
+            <i class="fas fa-rocket"></i>
+            Comecar a Usar
+        </button>
+        
+        <p class="footer-text">
+            Apos os 7 dias, voce podera escolher um plano para continuar.<br>
+            <a href="#" onclick="showPlans()">Ver planos disponiveis</a>
+        </p>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCvnw5eBBjUAa0piQ7Njy2t_W4TVZSIwk",
+            authDomain: "nexbook-14d69.firebaseapp.com",
+            projectId: "nexbook-14d69",
+            storageBucket: "nexbook-14d69.firebasestorage.app",
+            messagingSenderId: "445301731220",
+            appId: "1:445301731220:web:500608bc6903aa8a40e981",
+            measurementId: "G-VYH8GSRLZD"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Verificar se usuario esta logado
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Verificar se tem trial ativo
+            const subDoc = await db.collection('subscriptions').doc(user.uid).get();
+            if (!subDoc.exists) {
+                // Criar trial se nao existir
+                const now = firebase.firestore.Timestamp.now();
+                const expires = firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+                await db.collection('subscriptions').doc(user.uid).set({
+                    status: 'active',
+                    plan: 'trial',
+                    startDate: now,
+                    expiresAt: expires,
+                    updatedAt: now,
+                    trialDays: 7,
+                    automaticTrial: true,
+                    email: user.email || ''
+                });
+            }
+        });
+
+        function goToDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        function showPlans() {
+            window.location.href = 'pagamento.html';
+        }
+    </script>
+</body>
+</html>

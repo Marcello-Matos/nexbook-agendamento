@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.uid in ['Nrq4TYVDGsfboHOPDx7csCF0QSi2','O525l43Yzxatu5ckI7k8J1VLfjU2','SpygmGopNAXhban8lTi8JaBvAoG2','pZQbVSQkaid4lYSTDcNarjZTUHl1','tx3jN29YGcUzDu2kLGlErI86CgW2'] ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
+      );
+    }
+    function isAuth() { return request.auth != null; }
+    function isOwner(uid) { return request.auth != null && request.auth.uid == uid; }
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId) || isAdmin();
+      allow create: if isAuth();
+      allow delete: if isAdmin();
+    }
+    match /professionals/{docId} {
+      allow read: if true;
+      allow create, update: if isAuth();  // CORRIGIDO: Qualquer usuario autenticado pode criar
+      allow delete: if isAdmin();
+    }
+    match /services/{docId} {
+      allow read: if true;
+      allow create, update: if isAuth();  // CORRIGIDO: Qualquer usuario autenticado pode criar
+      allow delete: if isAdmin();
+    }
+    match /clients/{docId} {
+      allow read: if isAuth();
+      allow write: if isAuth();
+    }
+    match /appointments/{docId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if isAdmin();
+    }
+    match /settings/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId) || isAdmin();
+    }
+    match /subscriptions/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();  // CORRIGIDO: Usuario pode criar propria subscription
+    }
+    match /whatsappLogs/{docId} {
+      allow read, write: if isAuth();
+    }
+  }
+}

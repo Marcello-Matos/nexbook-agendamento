@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEXBOOK · Brand Reveal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { 
+            background: #010103; 
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #canvas-container { 
+            width: 100%; 
+            height: 100%; 
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* A LOGO REAL - Responsiva */
+        .logo-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            pointer-events: none;
+            perspective: 1000px;
+            width: 90%; /* Base para mobile */
+            max-width: 1200px; /* Limite máximo */
+            padding: 20px;
+        }
+
+        .logo-original {
+            width: 100%; /* Agora é relativo ao container */
+            height: auto;
+            opacity: 0;
+            transform: scale(0.5) translateZ(-500px);
+            filter: brightness(0) blur(20px);
+            animation: introReveal 5s cubic-bezier(0.2, 0, 0.2, 1) forwards 0.5s;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Animação de Introdução Cinematográfica */
+        @keyframes introReveal {
+            0% { 
+                opacity: 0; 
+                transform: scale(0.4) translateZ(-500px);
+                filter: brightness(0) blur(20px);
+            }
+            40% {
+                opacity: 1;
+                filter: brightness(2) blur(5px);
+            }
+            100% { 
+                opacity: 1; 
+                transform: scale(1) translateZ(0);
+                filter: brightness(1.1) blur(0);
+            }
+        }
+
+        /* Slogan responsivo */
+        .tagline {
+            position: absolute;
+            bottom: -30px; /* Ajustado para mobile */
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.6);
+            font-size: clamp(0.7rem, 3vw, 1.2rem); /* Fonte fluida */
+            letter-spacing: clamp(0.3em, 2vw, 0.6em); /* Espaçamento fluido */
+            text-transform: uppercase;
+            width: 100%;
+            text-align: center;
+            opacity: 0;
+            animation: fadeInSlogan 3s ease forwards 4s;
+            white-space: nowrap; /* Mantém em uma linha */
+            padding: 0 10px;
+        }
+
+        /* ========= BOTÃO DE ENTRADA ========= */
+        .btn-entrar {
+            position: absolute;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            pointer-events: auto;
+            opacity: 0;
+            animation: fadeInBotao 1s ease forwards 5s;
+            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255,255,255,0.2);
+            white-space: nowrap;
+            z-index: 20;
+        }
+
+        .btn-entrar:hover {
+            transform: translateX(-50%) translateY(-3px);
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.6);
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+
+        .btn-entrar:active {
+            transform: translateX(-50%) translateY(0);
+            box-shadow: 0 5px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        @keyframes fadeInBotao {
+            from { 
+                opacity: 0; 
+                transform: translate(-50%, 20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translate(-50%, 0); 
+            }
+        }
+
+        /* Ajustes responsivos para o botão */
+        @media (max-width: 768px) {
+            .btn-entrar {
+                padding: 14px 40px;
+                font-size: 1rem;
+                bottom: -80px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn-entrar {
+                padding: 12px 32px;
+                font-size: 0.9rem;
+                bottom: -70px;
+            }
+            
+            .tagline {
+                bottom: -25px;
+                font-size: 0.7rem;
+                letter-spacing: 0.3em;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 600px) {
+            .btn-entrar {
+                bottom: -60px;
+                padding: 10px 30px;
+                font-size: 0.9rem;
+            }
+            
+            .tagline {
+                bottom: -20px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @keyframes fadeInSlogan {
+            from { 
+                opacity: 0; 
+                transform: translate(-50%, 20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translate(-50%, 0); 
+            }
+        }
+
+        /* Ajustes para telas muito pequenas */
+        @media (max-width: 480px) {
+            .logo-container {
+                width: 95%;
+                padding: 10px;
+            }
+            
+            .tagline {
+                bottom: -25px;
+                font-size: 0.7rem;
+                letter-spacing: 0.3em;
+            }
+        }
+
+        /* Ajustes para telas muito grandes */
+        @media (min-width: 1200px) {
+            .logo-container {
+                width: 80%;
+            }
+            
+            .tagline {
+                bottom: -60px;
+            }
+        }
+
+        /* Landscape em mobile */
+        @media (orientation: landscape) and (max-height: 600px) {
+            .logo-container {
+                width: 70%;
+            }
+            
+            .tagline {
+                bottom: -20px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Suporte para notches e áreas seguras */
+        @supports (padding: max(0px)) {
+            .logo-container {
+                padding-left: max(20px, env(safe-area-inset-left));
+                padding-right: max(20px, env(safe-area-inset-right));
+            }
+        }
+
+        /* FORÇA O BOTÃO FICAR VISÍVEL E CLICÁVEL */
+.btn-entrar {
+    position: fixed !important; /* Tira do fluxo do container */
+    bottom: 50px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 9999 !important; /* Coloca acima de TUDO */
+    background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
+    color: white !important;
+    border: none !important;
+    padding: 16px 48px !important;
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    border-radius: 50px !important;
+    cursor: pointer !important;
+    pointer-events: auto !important; /* FORÇA CLIQUE */
+    opacity: 0;
+    animation: fadeInBotao 1s ease forwards 5s;
+    box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4) !important;
+    letter-spacing: 1px !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    white-space: nowrap !important;
+}
+
+/* Tira o pointer-events do container que bloqueia */
+.logo-container {
+    pointer-events: none !important; /* Já está assim, mas mantém */
+}
+
+/* Garante que o botão não herde o pointer-events: none */
+.btn-entrar {
+    pointer-events: auto !important;
+}
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container">
+        <div class="logo-container">
+            <img src="img/Gestão inteligente de agendamentos..svg" class="logo-original" alt="NEXBOOK Logo">
+            <div class="tagline">INOVAÇÃO EM MOVIMENTO</div>
+            <!-- 🔥 BOTÃO ADICIONADO AQUI 🔥 -->
+            <button class="btn-entrar" onclick="finalizarIntro()">ENTRAR NO SISTEMA</button>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, particles;
+        const count = 40000; 
+        let mouseX = 0, mouseY = 0;
+
+        init();
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            
+            // Câmera responsiva - ajusta FOV baseado no dispositivo
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const fov = isMobile ? 70 : 60; // FOV maior em mobile para melhor percepção de profundidade
+            
+            camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 1, 10000);
+            
+            // Distância da câmera baseada no dispositivo
+            camera.position.z = isMobile ? 2000 : 1500;
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+
+            // Otimização: reduz partículas em dispositivos mais lentos
+            const actualCount = isMobile ? 20000 : count;
+            
+            for (let i = 0; i < actualCount; i++) {
+                // Partículas começam concentradas para simular a explosão inicial
+                positions[i * 3] = (Math.random() - 0.5) * 5000;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 5000;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 5000;
+
+                const isRed = Math.random() > 0.8;
+                colors[i * 3] = isRed ? 0.95 : 1; 
+                colors[i * 3 + 1] = isRed ? 0.05 : 1; 
+                colors[i * 3 + 2] = isRed ? 0.1 : 1;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            // Tamanho das partículas responsivo
+            const particleSize = isMobile ? 2.0 : 2.5;
+
+            const material = new THREE.PointsMaterial({
+                size: particleSize,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0,
+                blending: THREE.AdditiveBlending
+            });
+
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limita pixel ratio para performance
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            // Animação inicial das partículas (Fade in)
+            setTimeout(() => {
+                let opacity = 0;
+                const fadeIn = setInterval(() => {
+                    opacity += 0.01;
+                    particles.material.opacity = opacity;
+                    if (opacity >= 0.7) clearInterval(fadeIn);
+                }, 30);
+            }, 100);
+
+            // Event listeners otimizados para touch
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('touchmove', onTouchMove, { passive: true });
+
+            window.addEventListener('resize', onWindowResize);
+            
+            // Previne scroll durante interação
+            document.body.addEventListener('touchstart', (e) => {
+                if (e.target === container) e.preventDefault();
+            }, { passive: false });
+
+            animate();
+        }
+
+        function onMouseMove(e) {
+            mouseX = (e.clientX - window.innerWidth / 2) * 0.15;
+            mouseY = (e.clientY - window.innerHeight / 2) * 0.15;
+        }
+
+        function onTouchMove(e) {
+            if (e.touches.length > 0) {
+                mouseX = (e.touches[0].clientX - window.innerWidth / 2) * 0.15;
+                mouseY = (e.touches[0].clientY - window.innerHeight / 2) * 0.15;
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = Date.now() * 0.0003;
+            
+            // Movimento de vórtex mais elegante
+            particles.rotation.y = time * 0.1;
+            particles.rotation.z = time * 0.05;
+
+            // Suavidade da câmera
+            camera.position.x += (mouseX - camera.position.x) * 0.03;
+            camera.position.y += (-mouseY - camera.position.y) * 0.03;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+    </script>
+    
+</body>
+</html>

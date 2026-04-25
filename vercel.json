@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "handle": "filesystem" },
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/dashboard", "dest": "/dashboard.html" },
+    { "src": "/booking", "dest": "/booking.html" },
+    { "src": "/pagamento", "dest": "/pagamento.html" },
+    { "src": "/confirmar", "dest": "/confirmar.html" },
+    { "src": "/metodo-pagamento", "dest": "/metodo-pagamento.html" }
+  ]
+}

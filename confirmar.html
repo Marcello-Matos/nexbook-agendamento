@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Presença — NEXBOOK</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Plus Jakarta Sans',sans-serif;background:#f1f5f9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background-image:radial-gradient(ellipse at 20% 20%,rgba(79,70,229,.08) 0,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(14,165,233,.08) 0,transparent 50%)}
+        .card{background:#fff;border-radius:24px;box-shadow:0 8px 40px rgba(79,70,229,.12);padding:40px 32px;max-width:440px;width:100%;text-align:center}
+        .brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:32px}
+        .brand-logo{width:40px;height:40px;background:linear-gradient(135deg,#4f46e5,#7c3aed,#0ea5e9);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff}
+        .brand-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;background:linear-gradient(135deg,#4f46e5,#7c3aed,#0ea5e9);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .status-icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px;animation:pop .5s cubic-bezier(.34,1.56,.64,1) both}
+        @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+        .icon-loading{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+        .icon-success{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
+        .icon-cancel{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+        .icon-error{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}
+        h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px;color:#0f172a}
+        .sub{color:#64748b;font-size:14px;margin-bottom:24px}
+        .appt-info{background:rgba(79,70,229,.05);border:1px solid rgba(79,70,229,.12);border-radius:14px;padding:16px 20px;text-align:left;margin-bottom:24px}
+        .info-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(79,70,229,.06);font-size:13px}
+        .info-row:last-child{border-bottom:none}
+        .info-row i{color:#4f46e5;width:16px}
+        .info-row strong{color:#0f172a}
+        .info-row span{color:#475569}
+        .actions{display:flex;flex-direction:column;gap:10px}
+        .btn-confirm{width:100%;padding:14px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .25s;box-shadow:0 6px 20px rgba(34,197,94,.3)}
+        .btn-confirm:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(34,197,94,.4)}
+        .btn-cancel{width:100%;padding:14px;background:rgba(239,68,68,.06);color:#dc2626;border:1.5px solid rgba(220,38,38,.2);border-radius:14px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .25s}
+        .btn-cancel:hover{background:rgba(239,68,68,.12);border-color:rgba(220,38,38,.4)}
+        .loading-ring{width:48px;height:48px;border:4px solid rgba(79,70,229,.15);border-top-color:#4f46e5;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .spinner-text{color:#64748b;font-size:14px}
+    </style>
+</head>
+<body>
+<div class="card" id="card">
+    <div class="brand">
+        <div class="brand-logo"><i class="fas fa-calendar-check"></i></div>
+        <span class="brand-name">NEXBOOK</span>
+    </div>
+    <div class="loading-ring"></div>
+    <p class="spinner-text">Carregando agendamento...</p>
+</div>
+
+<script>
+const firebaseConfig={apiKey:"AIzaSyCCvnw5eBBjUAa0piQ7Njy2t_W4TVZSIwk",authDomain:"nexbook-14d69.firebaseapp.com",projectId:"nexbook-14d69",storageBucket:"nexbook-14d69.firebasestorage.app",messagingSenderId:"445301731220",appId:"1:445301731220:web:500608bc6903aa8a40e981"};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+const MONTH_NAMES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+const params=new URLSearchParams(window.location.search);
+const id=params.get('id');
+
+window.addEventListener('DOMContentLoaded',async()=>{
+    if(!id){showResult('error','fa-exclamation-circle','Link Inválido','Este link de confirmação não é válido.');return;}
+    try{
+        const doc=await db.collection('appointments').doc(id).get();
+        if(!doc.exists){showResult('error','fa-question-circle','Agendamento não encontrado','Este link pode ter expirado.');return;}
+        const d=doc.data();
+        if(d.status==='confirmed'){showResult('success','fa-check-circle','Já Confirmado!','Sua presença já foi confirmada.',d,false);return;}
+        if(d.status==='cancelled'){showResult('cancel','fa-times-circle','Cancelado','Este agendamento foi cancelado.',d,false);return;}
+        showConfirmUI(d);
+    }catch(e){showResult('error','fa-exclamation-circle','Erro','Não foi possível carregar o agendamento.');}
+});
+
+function formatDate(str){
+    if(!str)return'';
+    const [y,m,d]=str.split('-');
+    return d+'/'+m+'/'+y;
+}
+
+function showConfirmUI(d){
+    const date=formatDate(d.date);
+    document.getElementById('card').innerHTML=`
+        <div class="brand"><div class="brand-logo"><i class="fas fa-calendar-check"></i></div><span class="brand-name">NEXBOOK</span></div>
+        <div class="status-icon icon-loading"><i class="fas fa-calendar-check"></i></div>
+        <h2>Confirmar Presença</h2>
+        <p class="sub">Olá <strong>${d.clientName||'Cliente'}</strong>! Confirme seu agendamento abaixo:</p>
+        <div class="appt-info">
+            <div class="info-row"><i class="fas fa-user-md"></i><span>Profissional:</span><strong>${d.professionalName||'-'}</strong></div>
+            <div class="info-row"><i class="fas fa-concierge-bell"></i><span>Serviço:</span><strong>${d.serviceName||'-'}</strong></div>
+            <div class="info-row"><i class="fas fa-calendar-alt"></i><span>Data:</span><strong>${date}</strong></div>
+            <div class="info-row"><i class="fas fa-clock"></i><span>Horário:</span><strong>${d.time||'-'}</strong></div>
+        </div>
+        <div class="actions">
+            <button class="btn-confirm" onclick="confirmPresence()"><i class="fas fa-check"></i> Confirmar minha presença</button>
+            <button class="btn-cancel" onclick="cancelAppointment()"><i class="fas fa-times"></i> Cancelar agendamento</button>
+        </div>`;
+}
+
+async function confirmPresence(){
+    try{
+        await db.collection('appointments').doc(id).update({status:'confirmed',confirmedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        showResult('success','fa-check-circle','Presença Confirmada!','Sua presença foi confirmada. Te esperamos!');
+    }catch(e){showResult('error','fa-exclamation-circle','Erro','Não foi possível confirmar. Tente novamente.');}
+}
+
+async function cancelAppointment(){
+    if(!confirm('Tem certeza que deseja cancelar este agendamento?'))return;
+    try{
+        await db.collection('appointments').doc(id).update({status:'cancelled',cancelledAt:firebase.firestore.FieldValue.serverTimestamp()});
+        showResult('cancel','fa-times-circle','Agendamento Cancelado','Seu agendamento foi cancelado. Esperamos te ver em breve!');
+    }catch(e){showResult('error','fa-exclamation-circle','Erro','Não foi possível cancelar. Tente novamente.');}
+}
+
+function showResult(type,icon,title,msg,data,showActions){
+    const iconClass=type==='success'?'icon-success':type==='cancel'?'icon-cancel':'icon-error';
+    const infoHtml=data?`<div class="appt-info"><div class="info-row"><i class="fas fa-calendar-alt"></i><span>Data:</span><strong>${formatDate(data.date)}</strong></div><div class="info-row"><i class="fas fa-clock"></i><span>Horário:</span><strong>${data.time||''}</strong></div></div>`:'';
+    document.getElementById('card').innerHTML=`
+        <div class="brand"><div class="brand-logo"><i class="fas fa-calendar-check"></i></div><span class="brand-name">NEXBOOK</span></div>
+        <div class="status-icon ${iconClass}"><i class="fas ${icon}"></i></div>
+        <h2>${title}</h2><p class="sub">${msg}</p>${infoHtml}`;
+}
+</script>
+</body>
+</html>

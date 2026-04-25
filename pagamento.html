@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXBOOK - Assinatura</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);font-family:"Plus Jakarta Sans",sans-serif;display:flex;align-items:center;justify-content:center;padding:20px}
+.page{width:100%;max-width:480px}
+/* Brand */
+.brand{text-align:center;margin-bottom:32px}
+.brand-logo{width:64px;height:64px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:18px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;box-shadow:0 8px 32px rgba(79,70,229,.4)}
+.brand-name{color:#fff;font-size:28px;font-weight:800;letter-spacing:-1px}
+.brand-sub{color:rgba(255,255,255,.5);font-size:14px;margin-top:4px}
+/* Card */
+.card{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:32px;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4f46e5,#7c3aed,#ec4899)}
+/* Badge */
+.badge-popular{position:absolute;top:20px;right:20px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:50px;letter-spacing:.5px}
+/* Plan header */
+.plan-name{color:rgba(255,255,255,.6);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.plan-price{display:flex;align-items:flex-end;gap:4px;margin-bottom:4px}
+.plan-currency{color:rgba(255,255,255,.7);font-size:18px;font-weight:600;margin-bottom:6px}
+.plan-amount{color:#fff;font-size:52px;font-weight:800;line-height:1;letter-spacing:-2px}
+.plan-period{color:rgba(255,255,255,.5);font-size:15px;margin-bottom:20px}
+.plan-desc{color:rgba(255,255,255,.6);font-size:14px;margin-bottom:24px;line-height:1.6}
+/* Features */
+.features{margin-bottom:28px}
+.feature{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.feature:last-child{border-bottom:none}
+.feature-icon{width:28px;height:28px;border-radius:8px;background:rgba(79,70,229,.3);display:flex;align-items:center;justify-content:center;color:#818cf8;font-size:12px;flex-shrink:0}
+.feature-text{color:rgba(255,255,255,.8);font-size:14px}
+/* Button */
+.btn-pay{width:100%;padding:18px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;box-shadow:0 8px 24px rgba(79,70,229,.4);font-family:inherit}
+.btn-pay:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(79,70,229,.5)}
+.btn-pay:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-pay .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.btn-pay.loading .spinner{display:block}
+.btn-pay.loading .btn-text{display:none}
+/* Methods */
+.payment-methods{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:16px}
+.payment-methods span{color:rgba(255,255,255,.4);font-size:12px}
+.method-badge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:5px 10px;color:rgba(255,255,255,.6);font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px}
+/* Security */
+.security{text-align:center;margin-top:20px;color:rgba(255,255,255,.3);font-size:12px;display:flex;align-items:center;justify-content:center;gap:6px}
+/* Success state */
+.success-state{display:none;text-align:center;padding:20px 0}
+.success-icon{width:80px;height:80px;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px;box-shadow:0 8px 32px rgba(34,197,94,.4)}
+.success-title{color:#fff;font-size:24px;font-weight:800;margin-bottom:8px}
+.success-sub{color:rgba(255,255,255,.6);font-size:15px;margin-bottom:24px}
+.btn-dashboard{display:block;width:100%;padding:16px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;font-family:inherit;transition:all .2s}
+.btn-dashboard:hover{transform:translateY(-2px)}
+/* Pending state */
+.pending-state{display:none;text-align:center;padding:20px 0}
+.pending-icon{font-size:48px;margin-bottom:16px}
+.pending-title{color:#f59e0b;font-size:20px;font-weight:700;margin-bottom:8px}
+.pending-sub{color:rgba(255,255,255,.5);font-size:14px;line-height:1.6}
+/* Failed state */
+.failed-state{display:none;text-align:center;padding:20px 0}
+.failed-icon{font-size:48px;margin-bottom:16px}
+.failed-title{color:#ef4444;font-size:20px;font-weight:700;margin-bottom:8px}
+.failed-sub{color:rgba(255,255,255,.5);font-size:14px;margin-bottom:20px}
+.btn-retry{display:block;width:100%;padding:16px;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.2);border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-retry:hover{background:rgba(255,255,255,.05)}
+/* Error toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#ef4444;color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;display:none;z-index:9999;box-shadow:0 8px 24px rgba(239,68,68,.4)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:480px){.card{padding:24px}.plan-amount{font-size:42px}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="brand">
+    <div class="brand-logo"><i class="fas fa-calendar-check"></i></div>
+    <div class="brand-name">NEXBOOK</div>
+    <div class="brand-sub">Sistema de Agendamento Profissional</div>
+  </div>
+
+  <div class="card" id="mainCard">
+    <div class="badge-popular">MAIS POPULAR</div>
+
+    <!-- Estado: Pagamento -->
+    <div id="payState">
+      <div class="plan-name">Plano Mensal</div>
+      <div class="plan-price">
+        <span class="plan-currency">R$</span>
+        <span class="plan-amount">99,90</span>
+      </div>
+      <div class="plan-period">por mes</div>
+      <div class="plan-desc">Acesso completo ao sistema de agendamento com todas as funcionalidades profissionais.</div>
+
+      <div class="features">
+        <div class="feature"><div class="feature-icon"><i class="fas fa-calendar-alt"></i></div><span class="feature-text">Agendamentos ilimitados</span></div>
+        <div class="feature"><div class="feature-icon"><i class="fas fa-users"></i></div><span class="feature-text">Gestao de clientes e profissionais</span></div>
+        <div class="feature"><div class="feature-icon"><i class="fas fa-envelope"></i></div><span class="feature-text">Emails automaticos (confirmacao + lembrete)</span></div>
+        <div class="feature"><div class="feature-icon"><i class="fab fa-whatsapp"></i></div><span class="feature-text">Integracao WhatsApp</span></div>
+        <div class="feature"><div class="feature-icon"><i class="fas fa-chart-bar"></i></div><span class="feature-text">Relatorios e insights</span></div>
+        <div class="feature"><div class="feature-icon"><i class="fas fa-link"></i></div><span class="feature-text">Link de agendamento publico</span></div>
+        <div class="feature"><div class="feature-icon"><i class="fas fa-mobile-alt"></i></div><span class="feature-text">Otimizado para mobile</span></div>
+      </div>
+
+      <button class="btn-pay" id="btnPay" onclick="startPayment()">
+        <div class="spinner"></div>
+        <span class="btn-text"><i class="fas fa-credit-card"></i> Assinar agora - R$ 99,90/mes</span>
+      </button>
+
+      <div class="payment-methods">
+        <span>Aceito:</span>
+        <div class="method-badge"><i class="fas fa-qrcode"></i> Pix</div>
+        <div class="method-badge"><i class="fas fa-credit-card"></i> Cartao</div>
+        <div class="method-badge"><i class="fas fa-barcode"></i> Boleto</div>
+      </div>
+
+      <div class="security">
+        <i class="fas fa-lock"></i>
+        Pagamento 100% seguro via Mercado Pago
+      </div>
+    </div>
+
+    <!-- Estado: Sucesso -->
+    <div class="success-state" id="successState">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Pagamento aprovado!</div>
+      <div class="success-sub">Sua assinatura esta ativa. Bem-vindo ao NEXBOOK!</div>
+      <a href="dashboard.html" class="btn-dashboard"><i class="fas fa-rocket"></i> Acessar o sistema</a>
+    </div>
+
+    <!-- Estado: Pendente -->
+    <div class="pending-state" id="pendingState">
+      <div class="pending-icon">⏳</div>
+      <div class="pending-title">Pagamento em processamento</div>
+      <div class="pending-sub">Seu pagamento esta sendo processado. Assim que confirmado, seu acesso sera liberado automaticamente.<br><br>Se pagou via Pix ou Boleto, pode levar alguns minutos.</div>
+    </div>
+
+    <!-- Estado: Falhou -->
+    <div class="failed-state" id="failedState">
+      <div class="failed-icon">❌</div>
+      <div class="failed-title">Pagamento nao aprovado</div>
+      <div class="failed-sub">Tente novamente com outro metodo de pagamento.</div>
+      <button class="btn-retry" onclick="showPayState()"><i class="fas fa-redo"></i> Tentar novamente</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCCvnw5eBBjUAa0piQ7Njy2t_W4TVZSIwk",
+  authDomain: "nexbook-14d69.firebaseapp.com",
+  projectId: "nexbook-14d69",
+  storageBucket: "nexbook-14d69.appspot.com",
+  messagingSenderId: "445301731220",
+  appId: "1:445301731220:web:500608bc6903aa8a40e981"
+};
+
+firebase.initializeApp(firebaseConfig);
+const functions = firebase.app().functions('southamerica-east1');
+
+// Detectar estado da URL
+const params = new URLSearchParams(window.location.search);
+if (params.get('success') === 'true') {
+  document.getElementById('payState').style.display = 'none';
+  document.getElementById('successState').style.display = 'block';
+} else if (params.get('pending') === 'true') {
+  document.getElementById('payState').style.display = 'none';
+  document.getElementById('pendingState').style.display = 'block';
+} else if (params.get('failed') === 'true') {
+  document.getElementById('payState').style.display = 'none';
+  document.getElementById('failedState').style.display = 'block';
+}
+
+function showPayState() {
+  document.getElementById('payState').style.display = 'block';
+  document.getElementById('failedState').style.display = 'none';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 4000);
+}
+
+async function startPayment() {
+  const btn = document.getElementById('btnPay');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  try {
+    const user = firebase.auth().currentUser;
+    let userId   = params.get('uid') || (user && user.uid) || '';
+    let userEmail = user && user.email || '';
+    let userName  = user && user.displayName || '';
+
+    if (!userId) {
+      showToast('Faca login antes de assinar.');
+      btn.classList.remove('loading'); btn.disabled = false;
+      setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+      return;
+    }
+
+    const createPayment = functions.httpsCallable('createPayment');
+    const result = await createPayment({ userId, userEmail, userName });
+    window.location.href = result.data.initPoint;
+  } catch (e) {
+    console.error(e);
+    showToast('Erro ao iniciar pagamento. Tente novamente.');
+    btn.classList.remove('loading'); btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

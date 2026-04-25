@@ -1,0 +1,315 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>NEXBOOK · Entrar</title>
+
+    <!-- Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="/manifest.json">
+
+    <meta name="theme-color" content="#7c3aed">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="NEXBOOK">
+        <!-- No head, substitua o <style> por: -->
+    <link rel="stylesheet" href="css/index.css">
+
+</head>
+<body>
+
+    <!-- Background blobs -->
+    <div class="bg-blob"></div>
+    <div class="bg-blob"></div>
+    <div class="bg-blob"></div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Main wrapper -->
+    <div class="wrapper">
+
+        <!-- ── Left Panel ──────────────────────────── -->
+        <div class="panel-left">
+            <div class="panel-brand">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <span class="logo-text">NEXBOOK</span>
+                </div>
+                <h2>Transforme seu negócio em uma máquina de resultados</h2>
+                <p>Plataforma completa de agendamentos com inteligência artificial para maximizar sua produtividade.</p>
+            </div>
+
+            <div class="panel-features">
+                <div class="panel-feature">
+                    <div class="feat-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="feat-text">
+                        <strong>Segurança Enterprise</strong>
+                        <span>Criptografia de ponta a ponta</span>
+                    </div>
+                </div>
+                <div class="panel-feature">
+                    <div class="feat-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="feat-text">
+                        <strong>Acesso Instantâneo</strong>
+                        <span>Entre com um clique via Google ou GitHub</span>
+                    </div>
+                </div>
+                <div class="panel-feature">
+                    <div class="feat-icon"><i class="fas fa-sync-alt"></i></div>
+                    <div class="feat-text">
+                        <strong>Multi-dispositivo</strong>
+                        <span>Acesse de qualquer lugar, qualquer hora</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Right Panel ─────────────────────────── -->
+        <div class="panel-right">
+
+            <!-- Theme toggle -->
+            <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="Alternar tema">
+                <i class="fas fa-moon" id="themeIcon"></i>
+            </button>
+
+            <!-- ══ LOGIN PANEL ══════════════════════ -->
+            <div id="loginPanel">
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('login')">Entrar</button>
+                    <button class="tab" onclick="switchTab('register')">Criar conta</button>
+                </div>
+
+                <!-- ── Sign In Form ──────────────── -->
+                <div id="loginForm">
+                    <div class="form-title">
+                        <h1>Acesse sua conta</h1>
+                        <p>Entre com suas credenciais para continuar</p>
+                    </div>
+
+                    <!-- Social logins - APENAS GOOGLE E GITHUB -->
+                    <div class="social-grid">
+                        <button class="social-btn google" onclick="signInWithGoogle()">
+                            <svg width="18" height="18" viewBox="0 0 48 48">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                            </svg>
+                            <span>Google</span>
+                        </button>
+
+                        <button class="social-btn github" onclick="signInWithGitHub()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/>
+                            </svg>
+                            <span>GitHub</span>
+                        </button>
+                    </div>
+
+                    <div class="divider">ou continue com email</div>
+
+                    <!-- Email -->
+                    <div class="field">
+                        <label>Email</label>
+                        <div class="field-wrap">
+                            <i class="fas fa-envelope icon"></i>
+                            <input type="email" id="loginEmail" placeholder="seu@email.com" autocomplete="email"
+                                   oninput="validateLoginEmail(this)">
+                            <span class="input-valid-icon" id="loginEmailIcon"></span>
+                        </div>
+                        <div class="field-error" id="loginEmailErr"></div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="field">
+                        <label>Senha</label>
+                        <div class="field-wrap">
+                            <i class="fas fa-lock icon"></i>
+                            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"
+                                   oninput="validateLoginPassword(this)" onkeydown="handleLoginEnter(event)">
+                            <button class="toggle-pw" type="button" onclick="togglePw('loginPassword', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="field-error" id="loginPasswordErr"></div>
+                    </div>
+
+                    <!-- Remember me + Forgot -->
+                    <div class="row">
+                        <label class="checkbox-wrap">
+                            <input type="checkbox" id="rememberMe" checked>
+                            <span>Lembrar de mim</span>
+                        </label>
+                        <button class="forgot-link" onclick="showForgot()">Esqueci a senha</button>
+                    </div>
+
+                    <button class="btn-submit" id="loginBtn" onclick="handleLogin()">
+                        <span class="btn-text">Entrar na conta</span>
+                        <span class="btn-spinner"><div class="spinner"></div></span>
+                    </button>
+
+                    <p class="terms">
+                        Ao entrar você concorda com nossos
+                        <a href="#">Termos de Uso</a> e
+                        <a href="#">Política de Privacidade</a>.
+                    </p>
+                </div>
+
+                <!-- ── Register Form ──────────────── -->
+                <div id="registerForm" style="display:none;">
+                    <div class="form-title">
+                        <h1>Crie sua conta 🚀</h1>
+                        <p>Comece gratuitamente, sem cartão de crédito</p>
+                    </div>
+
+                    <!-- Social logins - APENAS GOOGLE E GITHUB -->
+                    <div class="social-grid">
+                        <button class="social-btn google" onclick="signInWithGoogle()">
+                            <svg width="18" height="18" viewBox="0 0 48 48">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                            </svg>
+                            <span>Google</span>
+                        </button>
+
+                        <button class="social-btn github" onclick="signInWithGitHub()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/>
+                            </svg>
+                            <span>GitHub</span>
+                        </button>
+                    </div>
+
+                    <div class="divider">ou cadastre com email</div>
+
+                    <!-- Avatar preview -->
+                    <div class="avatar-preview">
+                        <div class="avatar-circle" id="regAvatar">?</div>
+                        <div class="avatar-hint">O avatar será gerado<br>automaticamente com seu nome.</div>
+                    </div>
+
+                    <!-- Name -->
+                    <div class="field">
+                        <label>Nome completo</label>
+                        <div class="field-wrap">
+                            <i class="fas fa-user icon"></i>
+                            <input type="text" id="regName" placeholder="Seu nome completo" autocomplete="name"
+                                   oninput="validateRegName(this)">
+                            <span class="input-valid-icon" id="regNameIcon"></span>
+                        </div>
+                        <div class="field-error" id="regNameErr"></div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="field">
+                        <label>Email</label>
+                        <div class="field-wrap">
+                            <i class="fas fa-envelope icon"></i>
+                            <input type="email" id="regEmail" placeholder="seu@email.com" autocomplete="email"
+                                   oninput="validateRegEmail(this)">
+                            <span class="input-valid-icon" id="regEmailIcon"></span>
+                        </div>
+                        <div class="field-error" id="regEmailErr"></div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="field">
+                        <label>Senha</label>
+                        <div class="field-wrap">
+                            <i class="fas fa-lock icon"></i>
+                            <input type="password" id="regPassword" placeholder="mínimo 8 caracteres" autocomplete="new-password"
+                                   oninput="checkPasswordStrength(this)">
+                            <button class="toggle-pw" type="button" onclick="togglePw('regPassword', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="pw-strength" id="pwStrength">
+                            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+                            <div class="strength-label" id="strengthLabel">Muito fraca</div>
+                        </div>
+                        <div class="field-error" id="regPasswordErr"></div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="field">
+                        <label>Confirmar senha</label>
+                        <div class="field-wrap">
+                            <i class="fas fa-lock icon"></i>
+                            <input type="password" id="regConfirm" placeholder="repita a senha" autocomplete="new-password"
+                                   oninput="validateConfirm(this)">
+                            <span class="input-valid-icon" id="regConfirmIcon"></span>
+                        </div>
+                        <div class="field-error" id="regConfirmErr"></div>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="row" style="margin-bottom:20px;">
+                        <label class="checkbox-wrap">
+                            <input type="checkbox" id="agreeTerms">
+                            <span>Concordo com os <a href="#" style="color:var(--accent)">Termos</a> e <a href="#" style="color:var(--accent)">Privacidade</a></span>
+                        </label>
+                    </div>
+
+                    <button class="btn-submit" id="registerBtn" onclick="handleRegister()">
+                        <span class="btn-text">Criar conta gratuita</span>
+                        <span class="btn-spinner"><div class="spinner"></div></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ══ FORGOT PASSWORD PANEL ════════════ -->
+            <div id="forgotPanel" class="forgot-panel">
+                <button class="back-btn" onclick="hideForgot()">
+                    <i class="fas fa-arrow-left"></i> Voltar ao login
+                </button>
+                <!-- No final do login-box, após o botão de login -->
+                <div class="form-title">
+                    <h1>Redefinir senha 🔑</h1>
+                    <p>Informe seu email e enviaremos um link de redefinição.</p>
+                </div>
+
+                <div class="field">
+                    <label>Email cadastrado</label>
+                    <div class="field-wrap">
+                        <i class="fas fa-envelope icon"></i>
+                        <input type="email" id="forgotEmail" placeholder="seu@email.com" autocomplete="email">
+                    </div>
+                    <div class="field-error" id="forgotEmailErr"></div>
+                </div>
+
+                <button class="btn-submit" id="forgotBtn" onclick="handleForgotPassword()" style="margin-top:8px;">
+                    <span class="btn-text"><i class="fas fa-paper-plane"></i> Enviar link</span>
+                    <span class="btn-spinner"><div class="spinner"></div></span>
+                </button>
+            </div>
+
+        </div><!-- /panel-right -->
+    </div><!-- /wrapper -->
+    <script src="js/index.js"></script>
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('Service Worker registrado', reg))
+      .catch(err => console.log('Erro no Service Worker', err));
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Horario - NEXBOOK</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/booking.css">
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <p>Carregando...</p>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <div class="booking-wrapper">
+        <div class="booking-brand">
+            <div class="brand-logo"><i class="fas fa-calendar-check"></i></div>
+            <div class="brand-info">
+                <span class="brand-name" id="businessName">NEXBOOK</span>
+                <span class="brand-sub">Agendamento Online</span>
+            </div>
+        </div>
+
+        <div class="stepper" id="stepper">
+            <div class="step-item active" data-step="1">
+                <div class="step-circle">1</div>
+                <span class="step-label">Profissional</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="2">
+                <div class="step-circle">2</div>
+                <span class="step-label">Servico</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="3">
+                <div class="step-circle">3</div>
+                <span class="step-label">Data/Hora</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="4">
+                <div class="step-circle">4</div>
+                <span class="step-label">Seus dados</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="5">
+                <div class="step-circle"><i class="fas fa-check"></i></div>
+                <span class="step-label">Confirmacao</span>
+            </div>
+        </div>
+
+        <div class="booking-card">
+
+            <!-- STEP 1: Profissional -->
+            <div class="step-content active" id="step1">
+                <div class="step-header">
+                    <h2>Escolha o Profissional</h2>
+                    <p>Selecione com quem deseja agendar</p>
+                </div>
+                <div class="professionals-grid" id="professionalsList">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
+            <!-- STEP 2: Servico -->
+            <div class="step-content" id="step2">
+                <div class="step-header">
+                    <button class="btn-back" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> Voltar</button>
+                    <h2>Escolha o Servico</h2>
+                    <p>Selecione o servico desejado</p>
+                </div>
+                <div class="services-list" id="servicesList">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Data/Hora -->
+            <div class="step-content" id="step3">
+                <div class="step-header">
+                    <button class="btn-back" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> Voltar</button>
+                    <h2>Escolha a Data e Horario</h2>
+                    <p>Selecione quando deseja ser atendido</p>
+                </div>
+                <div class="datetime-container">
+                    <div class="calendar-section">
+                        <div class="calendar-nav">
+                            <button class="cal-nav-btn" onclick="prevMonth()"><i class="fas fa-chevron-left"></i></button>
+                            <span class="cal-month-label" id="calMonthLabel"></span>
+                            <button class="cal-nav-btn" onclick="nextMonth()"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="cal-weekday">Dom</div>
+                            <div class="cal-weekday">Seg</div>
+                            <div class="cal-weekday">Ter</div>
+                            <div class="cal-weekday">Qua</div>
+                            <div class="cal-weekday">Qui</div>
+                            <div class="cal-weekday">Sex</div>
+                            <div class="cal-weekday">Sab</div>
+                        </div>
+                        <div class="calendar-days" id="calendarDays"></div>
+                    </div>
+                    <div class="slots-section">
+                        <h4 class="slots-title" id="slotsTitle">Selecione uma data</h4>
+                        <div class="slots-grid" id="slotsGrid">
+                            <div class="slots-placeholder">
+                                <i class="fas fa-calendar-alt"></i>
+                                <p>Clique em um dia para ver os horarios</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: Dados do cliente -->
+            <div class="step-content" id="step4">
+                <div class="step-header">
+                    <button class="btn-back" onclick="goToStep(3)"><i class="fas fa-arrow-left"></i> Voltar</button>
+                    <h2>Seus Dados</h2>
+                    <p>Preencha para finalizar o agendamento</p>
+                </div>
+                <div class="summary-mini" id="summaryMini"></div>
+                <form class="client-form" id="clientForm" onsubmit="return false;">
+                    <div class="form-field">
+                        <label><i class="fas fa-user"></i> Nome completo *</label>
+                        <input type="text" id="clientName" placeholder="Seu nome completo" required>
+                        <div class="field-error" id="nameError"></div>
+                    </div>
+                    <div class="form-field">
+                        <label><i class="fas fa-phone"></i> WhatsApp *</label>
+                        <input type="tel" id="clientPhone" placeholder="(11) 99999-9999" required oninput="maskPhone(this)">
+                        <div class="field-error" id="phoneError"></div>
+                    </div>
+                    <div class="form-field">
+                        <label><i class="fas fa-envelope"></i> E-mail (para receber confirmacao)</label>
+                        <input type="email" id="clientEmail" placeholder="seu@email.com">
+                        <div class="field-hint">Voce recerera um email de confirmacao e lembrete automatico</div>
+                    </div>
+                    <div class="form-field">
+                        <label><i class="fas fa-comment"></i> Observacoes (opcional)</label>
+                        <textarea id="clientNotes" placeholder="Alguma observacao para o profissional?" rows="3"></textarea>
+                    </div>
+                    <button class="btn-confirm" onclick="submitBooking()">
+                        <i class="fas fa-check-circle"></i> Confirmar Agendamento
+                    </button>
+                </form>
+            </div>
+
+            <!-- STEP 5: Confirmacao -->
+            <div class="step-content" id="step5">
+                <div class="success-container">
+                    <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+                    <h2>Agendamento Confirmado!</h2>
+                    <p class="success-sub">Seu horario foi reservado com sucesso</p>
+                    <div class="booking-summary" id="bookingSummary"></div>
+                    <button class="btn-whatsapp-confirm" id="btnWhatsapp" onclick="openWhatsAppConfirm()">
+                        <i class="fab fa-whatsapp"></i> Confirmar via WhatsApp
+                    </button>
+                    <p class="whatsapp-hint">Toque para avisar o estabelecimento e receber a confirmacao</p>
+                    <button class="btn-new-booking" onclick="resetBooking()">
+                        <i class="fas fa-plus"></i> Fazer outro agendamento
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="booking-footer">
+            <span>Powered by <strong>NEXBOOK</strong></span>
+        </div>
+    </div>
+
+    <script src="js/booking.js"></script>
+</body>
+</html>
