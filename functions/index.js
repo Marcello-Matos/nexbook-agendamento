@@ -1,6 +1,6 @@
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+﻿const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
-const { onRequest, onCall } = require("firebase-functions/v2/https");
+const { onRequest, onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const sgMail = require("@sendgrid/mail");
@@ -163,7 +163,7 @@ exports.getUserPermissions = onCall(
   { region: "southamerica-east1" },
   async (request) => {
     const uid = request.auth && request.auth.uid;
-    if (!uid) throw new Error("Nao autenticado");
+    if (!uid) throw new HttpsError("unauthenticated", "Nao autenticado");
     const doc = await db.collection("users").doc(uid).get();
     const data = doc.exists ? doc.data() : {};
     const role = data.role || "funcionario";
@@ -184,7 +184,7 @@ exports.setUserRole = onCall(
   { region: "southamerica-east1" },
   async (request) => {
     const callerUid = request.auth && request.auth.uid;
-    if (!callerUid) throw new Error("Nao autenticado");
+    if (!callerUid) throw new HttpsError("unauthenticated", "Nao autenticado");
     const callerDoc = await db.collection("users").doc(callerUid).get();
     if (!callerDoc.exists || callerDoc.data().role !== "admin") throw new Error("Sem permissao");
     const { targetUid, role, permissions } = request.data;
@@ -205,25 +205,27 @@ exports.createUser = onCall(
   { secrets: [SENDGRID_API_KEY], region: "southamerica-east1" },
   async (request) => {
     const callerUid = request.auth && request.auth.uid;
-    if (!callerUid) throw new Error("Nao autenticado");
+    if (!callerUid) throw new HttpsError("unauthenticated", "Nao autenticado");
 
-    // Verifica se quem chamou e admin
+    // Verifica se quem chamou pode criar usuarios (master, admin ou cliente pagante)
     const isAdminUid = ADMIN_UIDS.includes(callerUid);
     if (!isAdminUid) {
       const callerDoc = await db.collection("users").doc(callerUid).get();
-      if (!callerDoc.exists || callerDoc.data().role !== "admin") throw new Error("Sem permissao");
+      const callerRole = callerDoc.exists ? (callerDoc.data().role || "") : "";
+      const podecriar = callerRole === "admin" || callerRole === "user" || callerRole === "premium";
+      if (!podecriar) throw new HttpsError("permission-denied", "Sem permissao para criar usuarios");
     }
 
     const { name, email, password, permissions } = request.data;
-    if (!email || !password || !name) throw new Error("Nome, email e senha sao obrigatorios");
+    if (!email || !password || !name) throw new HttpsError("invalid-argument", "Nome, email e senha sao obrigatorios");
 
     // Criar usuario no Firebase Auth
     let userRecord;
     try {
       userRecord = await admin.auth().createUser({ email, password, displayName: name });
     } catch (e) {
-      if (e.code === "auth/email-already-exists") throw new Error("Este email ja esta cadastrado");
-      throw new Error("Erro ao criar usuario: " + e.message);
+      if (e.code === "auth/email-already-exists") throw new HttpsError("already-exists", "USUARIO JA CADASTRADO");
+      throw new HttpsError("internal", "Erro ao criar usuario: " + e.message);
     }
 
     const uid = userRecord.uid;
@@ -263,7 +265,7 @@ exports.grantTrialAccess = onCall(
   { region: "southamerica-east1" },
   async (request) => {
     const callerUid = request.auth && request.auth.uid;
-    if (!callerUid) throw new Error("Nao autenticado");
+    if (!callerUid) throw new HttpsError("unauthenticated", "Nao autenticado");
     if (!ADMIN_UIDS.includes(callerUid)) throw new Error("Sem permissao");
 
     const { targetUid, days, email } = request.data || {};
@@ -293,7 +295,7 @@ exports.ensureTrialAccess = onCall(
   { region: "southamerica-east1" },
   async (request) => {
     const uid = request.auth && request.auth.uid;
-    if (!uid) throw new Error("Nao autenticado");
+    if (!uid) throw new HttpsError("unauthenticated", "Nao autenticado");
 
     if (ADMIN_UIDS.includes(uid)) {
       return { success: true, admin: true, trialCreated: false };

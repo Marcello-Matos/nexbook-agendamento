@@ -1,173 +1,289 @@
-﻿// admin-users.js
+(function () {
+  var db = firebase.firestore();
+  var fn = firebase.app().functions("southamerica-east1");
+  var logado = null;
 
-const AU_PERMS = [
-  { key: 'verFinanceiro',          label: 'Faturamento',      icon: 'fa-dollar-sign',  color: '#f59e0b' },
-  { key: 'verRelatorios',          label: 'Relatórios',       icon: 'fa-chart-bar',    color: '#8b5cf6' },
-  { key: 'editarAgenda',           label: 'Agenda',           icon: 'fa-calendar-alt', color: '#3b82f6' },
-  { key: 'verClientes',            label: 'Clientes',         icon: 'fa-users',        color: '#10b981' },
-  { key: 'gerenciarServicos',      label: 'Serviços',         icon: 'fa-cut',          color: '#ec4899' },
-  { key: 'gerenciarProfissionais', label: 'Profissionais',    icon: 'fa-user-tie',     color: '#6366f1' }
-];
+  function esc(v) {
+    return String(v || "").replace(/[&<>"]/g, function (c) {
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+    });
+  }
 
-async function loadUsersView() {
-  var view = document.getElementById('usersView');
-  if (!view) return;
+  function msg(texto, tipo) {
+    var el = document.getElementById("auMsg");
+    if (!el) { alert(texto); return; }
+    el.textContent = texto;
+    el.className = "users-msg " + (tipo || "info");
+  }
 
-  view.innerHTML = `
-<div style="max-width:680px;margin:0 auto;padding:8px 0">
+  function val(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : "";
+  }
 
-  <div style="background:#fff;border-radius:24px;padding:36px;box-shadow:0 8px 32px rgba(0,0,0,.08);border:1px solid #e2e8f0">
+  function montar() {
+    var view = document.getElementById("usersView");
+    if (!view) return;
+    view.innerHTML = [
+      '<style>',
+      '.up{padding:28px;background:radial-gradient(circle at 80% 0,rgba(79,70,229,.13),transparent 35%),radial-gradient(circle at 10% 100%,rgba(20,184,166,.10),transparent 30%)}',
+      '.uhero{border-radius:24px;padding:28px 32px;margin-bottom:22px;background:linear-gradient(135deg,#111827 0%,#312e81 55%,#4f46e5 100%);color:#fff;box-shadow:0 20px 50px rgba(15,23,42,.22);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}',
+      '.uhero h1{margin:0;font-size:clamp(26px,4vw,40px);letter-spacing:-.04em}',
+      '.uhero p{margin:8px 0 0;color:rgba(255,255,255,.75);font-size:14px;max-width:600px;line-height:1.6}',
+      '.uhero-kicker{display:inline-flex;gap:8px;align-items:center;padding:7px 13px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}',
+      '.uhero-stat{min-width:160px;padding:16px 22px;border-radius:20px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);text-align:center}',
+      '.uhero-stat strong{display:block;font-size:32px;line-height:1;color:#fff}',
+      '.uhero-stat span{color:rgba(255,255,255,.7);font-size:12px;font-weight:700}',
+      '.ugrid{display:grid;grid-template-columns:minmax(300px,400px) 1fr;gap:20px;align-items:start}',
+      '.ucard{background:#fff;border:1px solid #e8edf5;box-shadow:0 12px 36px rgba(15,23,42,.07);border-radius:22px;overflow:hidden}',
+      '.ucard-head{padding:22px 24px 0}',
+      '.ucard-head h2{margin:0;font-size:19px;letter-spacing:-.02em;color:#0f172a}',
+      '.ucard-head p{margin:6px 0 0;color:#64748b;font-size:13px}',
+      '.uform{padding:20px 24px 24px}',
+      '.ufld{margin-bottom:14px}',
+      '.ufld label{display:block;margin-bottom:7px;color:#334155;font-size:12px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}',
+      '.uwrap{position:relative}',
+      '.uwrap i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#818cf8;font-size:13px}',
+      '.ufld input{width:100%;height:46px;padding:0 12px 0 38px;border:1.5px solid #dce3f0;border-radius:13px;outline:none;color:#0f172a;font-size:14px;transition:.2s;box-sizing:border-box;background:#f9faff}',
+      '.ufld input:focus{border-color:#6366f1;background:#fff;box-shadow:0 0 0 3px rgba(99,102,241,.12)}',
+      '.uperm-grid{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0 18px}',
+      '.uperm{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid #e8edf5;border-radius:13px;background:#f9faff;color:#334155;font-size:13px;font-weight:700;cursor:pointer;transition:.18s ease}',
+      '.uperm:hover{border-color:#c7d2fe;background:#eef2ff;transform:translateY(-1px)}',
+      '.uperm input{width:15px;height:15px;accent-color:#4f46e5}',
+      '.ubtn{width:100%;height:48px;border:none;border-radius:14px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-weight:900;font-size:14px;cursor:pointer;box-shadow:0 12px 24px rgba(79,70,229,.28);transition:.2s;display:flex;align-items:center;justify-content:center;gap:9px}',
+      '.ubtn:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(79,70,229,.35)}',
+      '.ubtn:disabled{opacity:.6;cursor:not-allowed;transform:none}',
+      '.users-msg{display:none;margin-bottom:14px;padding:13px 15px;border-radius:13px;font-weight:800;font-size:13px}',
+      '.users-msg.success{display:block;background:#dcfce7;color:#166534;border:1px solid #bbf7d0}',
+      '.users-msg.error{display:block;background:#fee2e2;color:#991b1b;border:1px solid #fecaca}',
+      '.users-msg.info{display:block;background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}',
+      '.utbar{padding:0 24px 16px;display:flex;justify-content:space-between;gap:12px;align-items:center}',
+      '.usearch{position:relative;flex:1;max-width:340px}',
+      '.usearch i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:13px}',
+      '.usearch input{width:100%;height:42px;padding:0 12px 0 36px;border:1.5px solid #dce3f0;border-radius:13px;outline:none;background:#f9faff;box-sizing:border-box;font-size:13px}',
+      '.ughost{height:42px;border:1.5px solid #dce3f0;background:#fff;color:#334155;border-radius:13px;padding:0 14px;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.18s ease}',
+      '.ughost:hover{border-color:#818cf8;color:#4f46e5;transform:translateY(-1px)}',
+      '.utable-wrap{padding:0 16px 20px;overflow-x:auto}',
+      '.utable{width:100%;border-collapse:separate;border-spacing:0 8px;min-width:540px}',
+      '.utable th{text-align:left;padding:0 14px 6px;color:#94a3b8;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:900}',
+      '.utable td{padding:14px;background:#fff;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;font-size:13px;color:#0f172a;transition:.15s}',
+      '.utable tr:hover td{background:#f8faff}',
+      '.utable td:first-child{border-left:1px solid #f1f5f9;border-radius:14px 0 0 14px}',
+      '.utable td:last-child{border-right:1px solid #f1f5f9;border-radius:0 14px 14px 0}',
+      '.ucell{display:flex;align-items:center;gap:10px}',
+      '.uavatar{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;flex-shrink:0;box-shadow:0 6px 16px rgba(79,70,229,.22)}',
+      '.uname{font-weight:900;color:#0f172a;font-size:13px}',
+      '.uemail{color:#64748b;font-size:11px;margin-top:2px}',
+      '.upill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-weight:900;font-size:11px;text-transform:capitalize}',
+      '.upill-role{background:#eef2ff;color:#4338ca}',
+      '.upill-ok{background:#dcfce7;color:#166534}',
+      '.uempty{padding:28px;text-align:center;color:#64748b;background:#f8fafc;border-radius:16px;border:1px dashed #cbd5e1;font-size:14px}',
+      '@media(max-width:1050px){.ugrid{grid-template-columns:1fr}}',
+      '@media(max-width:640px){.up{padding:16px}.uhero{flex-direction:column;padding:20px}.utbar{flex-direction:column;align-items:stretch}.usearch{max-width:none}}',
+      '</style>',
+      '<div class="up">',
+        '<div class="uhero">',
+          '<div>',
+            '<div class="uhero-kicker"><i class="fas fa-shield-alt"></i> Gestao de acesso</div>',
+            '<h1>Usuarios da equipe</h1>',
+            '<p>Cadastre funcionarios, defina permissoes e acompanhe todos os acessos do sistema em uma tela profissional.</p>',
+          '</div>',
+          '<div class="uhero-stat"><strong id="auTotal">0</strong><span>usuarios cadastrados</span></div>',
+        '</div>',
+        '<div class="ugrid">',
+          '<section class="ucard">',
+            '<div class="ucard-head"><h2>Novo usuario</h2><p>Crie um acesso com senha e permissoes.</p></div>',
+            '<div class="uform">',
+              '<div id="auMsg" class="users-msg"></div>',
+              '<div class="ufld"><label>Nome completo</label><div class="uwrap"><i class="fas fa-user"></i><input type="text" id="auName" placeholder="Ex: Ana Souza"></div></div>',
+              '<div class="ufld"><label>E-mail</label><div class="uwrap"><i class="fas fa-envelope"></i><input type="email" id="auEmail" placeholder="usuario@empresa.com"></div></div>',
+              '<div class="ufld"><label>Senha</label><div class="uwrap"><i class="fas fa-lock"></i><input type="password" id="auPassword" placeholder="Minimo 6 caracteres"></div></div>',
+              '<label style="display:block;margin:16px 0 8px;color:#334155;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.04em">Permissoes</label>',
+              '<div class="uperm-grid">',
+                '<label class="uperm"><input type="checkbox" id="pEditarAgenda" checked> Editar agenda</label>',
+                '<label class="uperm"><input type="checkbox" id="pVerClientes" checked> Ver clientes</label>',
+                '<label class="uperm"><input type="checkbox" id="pVerFinanceiro"> Ver financeiro</label>',
+                '<label class="uperm"><input type="checkbox" id="pGerenciarServicos"> Gerenciar servicos</label>',
+                '<label class="uperm"><input type="checkbox" id="pGerenciarProfissionais"> Gerenciar profissionais</label>',
+                '<label class="uperm"><input type="checkbox" id="pVerRelatorios"> Ver relatorios</label>',
+              '</div>',
+              '<button class="ubtn" id="auCreateBtn" type="button"><i class="fas fa-user-plus"></i> Criar usuario</button>',
+            '</div>',
+          '</section>',
+          '<section class="ucard">',
+            '<div class="ucard-head"><h2>Usuarios cadastrados</h2><p>Consulte rapidamente quem ja possui acesso.</p></div>',
+            '<div class="utbar">',
+              '<div class="usearch"><i class="fas fa-search"></i><input id="auSearch" type="text" placeholder="Buscar por nome ou e-mail"></div>',
+              '<button class="ughost" id="auRefreshBtn" type="button"><i class="fas fa-sync-alt"></i> Atualizar</button>',
+            '</div>',
+            '<div id="auLista" class="utable-wrap"><div class="uempty">Carregando...</div></div>',
+          '</section>',
+        '</div>',
+      '</div>'
+    ].join("");
 
-    <!-- Titulo -->
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:32px">
-      <div style="width:48px;height:48px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <i class="fas fa-user-plus" style="color:#fff;font-size:1.1rem"></i>
-      </div>
-      <div>
-        <h2 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin:0 0 2px">Criar Novo Usuário</h2>
-        <p style="font-size:.8rem;color:#94a3b8;margin:0">Defina as permissões de acesso ao sistema</p>
-      </div>
-    </div>
+    document.getElementById("auCreateBtn").addEventListener("click", criar);
+    document.getElementById("auRefreshBtn").addEventListener("click", listar);
+    document.getElementById("auSearch").addEventListener("input", filtrar);
+    listar();
+  }
 
-    <!-- Campos -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-      <div>
-        <label style="font-size:.7rem;font-weight:800;color:#64748b;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:6px">Nome Completo</label>
-        <input id="auName" type="text" placeholder="Ex: Maria Silva"
-          style="width:100%;padding:12px 14px;border:2px solid #e2e8f0;border-radius:12px;font-size:.9rem;color:#0f172a;background:#f8fafc;box-sizing:border-box;outline:none;transition:all .2s"
-          onfocus="this.style.borderColor='#4f46e5';this.style.background='#fff';this.style.boxShadow='0 0 0 4px rgba(79,70,229,.08)'"
-          onblur="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc';this.style.boxShadow='none'">
-      </div>
-      <div>
-        <label style="font-size:.7rem;font-weight:800;color:#64748b;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:6px">Email</label>
-        <input id="auEmail" type="email" placeholder="maria@exemplo.com"
-          style="width:100%;padding:12px 14px;border:2px solid #e2e8f0;border-radius:12px;font-size:.9rem;color:#0f172a;background:#f8fafc;box-sizing:border-box;outline:none;transition:all .2s"
-          onfocus="this.style.borderColor='#4f46e5';this.style.background='#fff';this.style.boxShadow='0 0 0 4px rgba(79,70,229,.08)'"
-          onblur="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc';this.style.boxShadow='none'">
-      </div>
-    </div>
+  var cache = [];
 
-    <div style="margin-bottom:28px">
-      <label style="font-size:.7rem;font-weight:800;color:#64748b;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:6px">Senha Inicial</label>
-      <input id="auPassword" type="password" placeholder="Mínimo 6 caracteres"
-        style="width:280px;padding:12px 14px;border:2px solid #e2e8f0;border-radius:12px;font-size:.9rem;color:#0f172a;background:#f8fafc;outline:none;transition:all .2s"
-        onfocus="this.style.borderColor='#4f46e5';this.style.background='#fff';this.style.boxShadow='0 0 0 4px rgba(79,70,229,.08)'"
-        onblur="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc';this.style.boxShadow='none'">
-    </div>
-
-    <!-- Permissoes -->
-    <div style="margin-bottom:32px">
-      <label style="font-size:.7rem;font-weight:800;color:#64748b;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:12px">Permissões de Acesso</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-        ${AU_PERMS.map(p => `
-        <label id="auLabel_${p.key}" style="display:flex;align-items:center;gap:10px;padding:13px 14px;border:2px solid #e2e8f0;border-radius:12px;cursor:pointer;background:#f8fafc;transition:all .2s;user-select:none">
-          <input type="checkbox" id="auperm_${p.key}" onchange="auStylePerm('${p.key}','${p.color}')" style="display:none"
-            ${(p.key==='editarAgenda'||p.key==='verClientes')?'checked':''}>
-          <span style="width:32px;height:32px;border-radius:8px;background:${p.color}20;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">
-            <i class="fas ${p.icon}" style="font-size:.8rem;color:${p.color}"></i>
-          </span>
-          <span style="font-size:.82rem;font-weight:600;color:#374151">${p.label}</span>
-          <i class="fas fa-check-circle" id="auCheck_${p.key}" style="margin-left:auto;font-size:.9rem;color:${p.color};display:${(p.key==='editarAgenda'||p.key==='verClientes')?'block':'none'}"></i>
-        </label>`).join('')}
-      </div>
-    </div>
-
-    <!-- Botoes -->
-    <div style="display:flex;gap:12px;padding-top:24px;border-top:1px solid #f1f5f9">
-      <button id="auCreateBtn" onclick="auCreateUser()"
-        style="display:inline-flex;align-items:center;gap:8px;padding:13px 32px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(79,70,229,.35);transition:opacity .2s">
-        <i class="fas fa-user-plus"></i> Criar Usuário
-      </button>
-      <button onclick="auLimpar()" style="padding:13px 22px;background:#f1f5f9;color:#64748b;border:none;border-radius:12px;font-size:.9rem;font-weight:600;cursor:pointer">
-        Limpar
-      </button>
-    </div>
-
-  </div>
-</div>`;
-
-  // Estilizar os que ja estao marcados
-  AU_PERMS.forEach(function(p) {
-    if (document.getElementById('auperm_' + p.key) && document.getElementById('auperm_' + p.key).checked) {
-      auStylePerm(p.key, p.color);
+  async function listar() {
+    var el = document.getElementById("auLista");
+    if (!el || !logado) return;
+    el.innerHTML = '<div class="uempty">Carregando...</div>';
+    try {
+      var snap = await db.collection("users").where("createdBy", "==", logado.uid).get();
+      cache = [];
+      snap.forEach(function (doc) {
+        var u = doc.data() || {};
+        cache.push({ id: doc.id, name: u.name || "", email: u.email || "", role: u.role || "funcionario", createdAt: u.createdAt });
+      });
+      cache.sort(function (a, b) {
+        var da = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+        var db2 = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+        return db2 - da;
+      });
+      render(cache);
+    } catch (e) {
+      console.error(e);
+      el.innerHTML = '<div class="uempty" style="color:#991b1b">Erro ao carregar: ' + esc(e.message) + '</div>';
     }
-  });
-}
-
-function auStylePerm(key, color) {
-  var cb = document.getElementById('auperm_' + key);
-  var label = document.getElementById('auLabel_' + key);
-  var check = document.getElementById('auCheck_' + key);
-  if (!cb || !label) return;
-  if (cb.checked) {
-    label.style.borderColor = color;
-    label.style.background = color + '10';
-    if (check) check.style.display = 'block';
-  } else {
-    label.style.borderColor = '#e2e8f0';
-    label.style.background = '#f8fafc';
-    if (check) check.style.display = 'none';
   }
-}
 
-function auLimpar() {
-  var fields = ['auName','auEmail','auPassword'];
-  fields.forEach(function(id) { var el=document.getElementById(id); if(el) el.value=''; });
-  AU_PERMS.forEach(function(p) {
-    var cb = document.getElementById('auperm_' + p.key);
-    if (cb) { cb.checked = (p.key==='editarAgenda'||p.key==='verClientes'); auStylePerm(p.key, p.color); }
-  });
-}
-
-async function auCreateUser() {
-  var name = (document.getElementById('auName').value||'').trim();
-  var email = (document.getElementById('auEmail').value||'').trim();
-  var password = document.getElementById('auPassword').value||'';
-  if (!name||!email||!password) { alert('Preencha nome, email e senha!'); return; }
-  if (password.length < 6) { alert('A senha precisa ter no mínimo 6 caracteres!'); return; }
-  var permissions = {};
-  AU_PERMS.forEach(function(p) {
-    var cb = document.getElementById('auperm_' + p.key);
-    permissions[p.key] = cb ? cb.checked : false;
-  });
-  var btn = document.getElementById('auCreateBtn');
-  btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Criando...';
-  try {
-    var fn = firebase.app().functions('southamerica-east1');
-    await fn.httpsCallable('createUser')({ name:name, email:email, password:password, permissions:permissions });
-    if (typeof showNotification==='function') showNotification('Usuário ' + name + ' criado com sucesso!', 'success');
-    auLimpar();
-  } catch(e) {
-    alert('Erro ao criar usuário: ' + (e.message||e));
+  function filtrar() {
+    var t = val("auSearch").toLowerCase();
+    render(cache.filter(function (u) { return u.name.toLowerCase().indexOf(t) > -1 || u.email.toLowerCase().indexOf(t) > -1; }));
   }
-  btn.disabled=false; btn.innerHTML='<i class="fas fa-user-plus"></i> Criar Usuário';
-}
-async function auFindUserByEmail() {
-  var email = (document.getElementById('auEmail').value || '').trim().toLowerCase();
-  if (!email) { alert('Digite o e-mail do usuário.'); return null; }
-  const snap = await firebase.firestore().collection('users').where('email','==',email).limit(1).get();
-  if (snap.empty) { alert('Usuário não encontrado com esse e-mail.'); return null; }
-  const doc = snap.docs[0];
-  return { id: doc.id, data: doc.data() };
-}
 
-async function auGrantTrial(days) {
-  try {
-    var found = await auFindUserByEmail();
-    if (!found) return;
-    var btn = document.getElementById('auTrialBtn');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Liberando...'; }
-    var fn = firebase.app().functions('southamerica-east1');
-    await fn.httpsCallable('grantTrialAccess')({ targetUid: found.id, days: days || 7, email: found.data.email || '' });
-    if (typeof showNotification==='function') showNotification('Acesso liberado por ' + (days||7) + ' dias para ' + (found.data.email || found.id), 'success');
-    else alert('Acesso liberado com sucesso!');
-  } catch(e) {
-    alert('Erro ao liberar acesso: ' + (e.message || e));
-  } finally {
-    var btn = document.getElementById('auTrialBtn');
-    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-bolt"></i> Liberar 7 dias'; }
+  function render(list) {
+    var el = document.getElementById("auLista");
+    var tot = document.getElementById("auTotal");
+    if (tot) tot.textContent = cache.length;
+    if (!el) return;
+    if (!list.length) { el.innerHTML = '<div class="uempty">Nenhum usuario encontrado.</div>'; return; }
+    var h = '<table class="utable"><thead><tr><th>Usuario</th><th>Perfil</th><th>Criado em</th><th>Acoes</th></tr></thead><tbody>';
+    list.forEach(function (u) {
+      var ini = u.name.trim().charAt(0).toUpperCase() || "U";
+      var dt = u.createdAt && u.createdAt.toDate ? u.createdAt.toDate().toLocaleDateString("pt-BR") : "-";
+      h += '<tr>';
+      h += '<td><div class="ucell"><div class="uavatar">' + esc(ini) + '</div><div><div class="uname">' + esc(u.name || "Sem nome") + '</div><div class="uemail">' + esc(u.email || "-") + '</div></div></div></td>';
+      h += '<td><span class="upill upill-role"><i class="fas fa-id-badge"></i>' + esc(u.role) + '</span></td>';
+      h += '<td style="color:#64748b;font-size:12px">' + dt + '</td>';
+      h += '<td><div style="display:flex;gap:7px;">'
+         + '<button onclick="auEditar(\'' + u.id + '\')" style="height:34px;padding:0 13px;border:1.5px solid #c7d2fe;background:#eef2ff;color:#4338ca;border-radius:10px;font-weight:900;font-size:12px;cursor:pointer;" title="Editar"><i class="fas fa-pen"></i></button>'
+         + '<button onclick="auExcluir(\'' + u.id + '\',\'' + esc(u.name) + '\')" style="height:34px;padding:0 13px;border:1.5px solid #fecaca;background:#fff5f5;color:#dc2626;border-radius:10px;font-weight:900;font-size:12px;cursor:pointer;" title="Excluir"><i class="fas fa-trash"></i></button>'
+         + '</div></td>';
+      h += '</tr>';
+    });
+    h += '</tbody></table>';
+    h += '<div id="auModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:none;align-items:center;justify-content:center;">'
+      + '<div style="background:#fff;border-radius:22px;padding:28px;width:100%;max-width:480px;box-shadow:0 30px 70px rgba(15,23,42,.22);margin:16px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">'
+      + '<h2 id="auModalTitle" style="margin:0;font-size:20px;color:#0f172a;">Editar usuario</h2>'
+      + '<button onclick="auFecharModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">&times;</button>'
+      + '</div>'
+      + '<div id="auModalBody"></div>'
+      + '</div></div>';
+    el.innerHTML = h;
+    document.getElementById("auModal").style.display = "none";
   }
-}
 
+  function auFecharModal() {
+    var m = document.getElementById("auModal");
+    if (m) m.style.display = "none";
+  }
 
+  function auEditar(uid) {
+    var u = cache.find(function(x){ return x.id === uid; });
+    if (!u) return;
+    var m = document.getElementById("auModal");
+    var body = document.getElementById("auModalBody");
+    if (!m || !body) return;
+    var perms = u.permissions || {};
+    body.innerHTML = '<div class="ufld"><label>Nome</label><div class="uwrap"><i class="fas fa-user"></i><input id="meNome" type="text" value="' + esc(u.name) + '" style="width:100%;height:46px;padding:0 12px 0 38px;border:1.5px solid #dce3f0;border-radius:13px;outline:none;font-size:14px;box-sizing:border-box;"></div></div>'
+      + '<label style="display:block;margin:14px 0 8px;font-size:12px;font-weight:900;text-transform:uppercase;color:#334155;">Permissoes</label>'
+      + '<div style="display:grid;gap:8px;margin-bottom:20px;">'
+      + '<label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #e8edf5;border-radius:12px;background:#f9faff;font-size:13px;font-weight:700;cursor:pointer;"><input type="checkbox" id="mePa" ' + (perms.editarAgenda ? 'checked' : '') + '> Editar agenda</label>'
+      + '<label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #e8edf5;border-radius:12px;background:#f9faff;font-size:13px;font-weight:700;cursor:pointer;"><input type="checkbox" id="mePc" ' + (perms.verClientes ? 'checked' : '') + '> Ver clientes</label>'
+      + '<label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #e8edf5;border-radius:12px;background:#f9faff;font-size:13px;font-weight:700;cursor:pointer;"><input type="checkbox" id="mePf" ' + (perms.verFinanceiro ? 'checked' : '') + '> Ver financeiro</label>'
+      + '<label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #e8edf5;border-radius:12px;background:#f9faff;font-size:13px;font-weight:700;cursor:pointer;"><input type="checkbox" id="mePs" ' + (perms.gerenciarServicos ? 'checked' : '') + '> Gerenciar servicos</label>'
+      + '<label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #e8edf5;border-radius:12px;background:#f9faff;font-size:13px;font-weight:700;cursor:pointer;"><input type="checkbox" id="mePp" ' + (perms.gerenciarProfissionais ? 'checked' : '') + '> Gerenciar profissionais</label>'
+      + '<label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #e8edf5;border-radius:12px;background:#f9faff;font-size:13px;font-weight:700;cursor:pointer;"><input type="checkbox" id="mePr" ' + (perms.verRelatorios ? 'checked' : '') + '> Ver relatorios</label>'
+      + '</div>'
+      + '<div style="display:flex;gap:10px;">'
+      + '<button onclick="auSalvar(\'' + uid + '\')" style="flex:1;height:46px;border:none;border-radius:13px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-weight:900;cursor:pointer;"><i class="fas fa-save"></i> Salvar</button>'
+      + '<button onclick="auFecharModal()" style="height:46px;padding:0 18px;border:1.5px solid #dce3f0;border-radius:13px;background:#fff;color:#334155;font-weight:900;cursor:pointer;">Cancelar</button>'
+      + '</div>';
+    m.style.display = "flex";
+  }
 
+  async function auSalvar(uid) {
+    var nome = document.getElementById("meNome") ? document.getElementById("meNome").value.trim() : "";
+    if (!nome) { alert("Nome obrigatorio"); return; }
+    var newPerms = {
+      editarAgenda: document.getElementById("mePa").checked,
+      verClientes: document.getElementById("mePc").checked,
+      verFinanceiro: document.getElementById("mePf").checked,
+      gerenciarServicos: document.getElementById("mePs").checked,
+      gerenciarProfissionais: document.getElementById("mePp").checked,
+      verRelatorios: document.getElementById("mePr").checked
+    };
+    try {
+      await db.collection("users").doc(uid).update({ name: nome, permissions: newPerms, canViewSensitiveData: newPerms.verFinanceiro });
+      auFecharModal();
+      listar();
+    } catch(e) { alert("Erro ao salvar: " + e.message); }
+  }
+
+  async function auExcluir(uid, nome) {
+    if (!confirm("Excluir o usuario " + nome + "? Esta acao nao pode ser desfeita.")) return;
+    try {
+      await db.collection("users").doc(uid).delete();
+      listar();
+    } catch(e) { alert("Erro ao excluir: " + e.message); }
+  }
+  async function criar() {
+    var name = val("auName"), email = val("auEmail"), password = val("auPassword");
+    var btn = document.getElementById("auCreateBtn");
+    if (!name || !email || !password) { msg("Preencha nome, e-mail e senha.", "error"); return; }
+    if (password.length < 6) { msg("Senha minima: 6 caracteres.", "error"); return; }
+    var perms = { editarAgenda: document.getElementById("pEditarAgenda").checked, verClientes: document.getElementById("pVerClientes").checked, verFinanceiro: document.getElementById("pVerFinanceiro").checked, gerenciarServicos: document.getElementById("pGerenciarServicos").checked, gerenciarProfissionais: document.getElementById("pGerenciarProfissionais").checked, verRelatorios: document.getElementById("pVerRelatorios").checked };
+    try {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+      await fn.httpsCallable("createUser")({ name: name, email: email, password: password, permissions: perms });
+      msg("Usuario cadastrado com sucesso.", "success");
+      document.getElementById("auName").value = "";
+      document.getElementById("auEmail").value = "";
+      document.getElementById("auPassword").value = "";
+      listar();
+    } catch (e) {
+      console.error(e);
+      var m = String(e.message || "").toLowerCase();
+      if (m.indexOf("already") > -1 || m.indexOf("exists") > -1 || m.indexOf("cadastrado") > -1) {
+        msg("USUARIO JA CADASTRADO", "error");
+      } else {
+        msg("Erro: " + (e.message || "verifique o console"), "error");
+      }
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-user-plus"></i> Criar usuario';
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (user) { logado = user; montar(); }
+    });
+  });
+
+  window.listarUsuarios = listar;
+  window.montarTelaUsuarios = montar;
+  window.auEditar = auEditar;
+  window.auExcluir = auExcluir;
+  window.auSalvar = auSalvar;
+  window.auFecharModal = auFecharModal;
+})();

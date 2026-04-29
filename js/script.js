@@ -1566,12 +1566,14 @@ function updateDashboardUI(data) {
     document.getElementById('clientsValue').textContent = data.activeClients;
     
     let monthlyCard = document.getElementById('monthlyRevenueCard');
+    if (monthlyCard && window.canViewSensitiveData === false) { monthlyCard.style.display = 'none'; return; }
+    if (!monthlyCard && window.canViewSensitiveData === false) { return; }
     if (!monthlyCard) {
         const statsGrid = document.querySelector('.stats-grid');
         if (statsGrid) {
             const newCard = document.createElement('div');
             newCard.className = 'stat-card';
-            newCard.id = 'monthlyRevenueCard';
+            newCard.id = 'monthlyRevenueCard'; newCard.setAttribute('data-permission','financeiro');
             newCard.innerHTML = `
                 <div class="stat-header">
                     <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
@@ -1585,6 +1587,8 @@ function updateDashboardUI(data) {
             `;
             statsGrid.appendChild(newCard);
         }
+    } else if (window.canViewSensitiveData === false) {
+        if (monthlyCard) monthlyCard.style.display = 'none';
     } else {
         const valueElement = document.getElementById('monthlyRevenueValue');
         if (valueElement) {
@@ -4899,14 +4903,32 @@ auth.onAuthStateChanged(async user => {
                 const firestoreRole = userData.role || (isMasterUid ? 'admin' : 'funcionario');
                 window.userRole = firestoreRole;
                 window.canViewSensitiveData = isMasterUid || (userData.canViewSensitiveData === true) || firestoreRole === 'admin';
+                // Menus por permissao (dentro do try para acessar userData)
+                var ehFunc = firestoreRole === 'funcionario' && !isMasterUid;
+                var perms = userData.permissions || {};
+                document.querySelectorAll('[data-permission="admin"]').forEach(function(el) {
+                    el.style.display = !ehFunc ? '' : 'none';
+                });
+                if (ehFunc) {
+                    var nP = document.querySelector('.nav-item[data-view="professionals"]');
+                    if (nP) nP.style.display = perms.gerenciarProfissionais ? '' : 'none';
+                    var nS = document.querySelector('.nav-item[data-view="services"]');
+                    if (nS) nS.style.display = perms.gerenciarServicos ? '' : 'none';
+                    var nC = document.querySelector('.nav-item[data-view="clients"]');
+                    if (nC) nC.style.display = perms.verClientes ? '' : 'none';
+                    var nR = document.querySelector('.nav-item[data-view="reports"]');
+                    if (nR) nR.style.display = perms.verRelatorios ? '' : 'none';
+                    document.querySelectorAll('[data-permission="financeiro"]').forEach(function(el) {
+                        el.style.display = perms.verFinanceiro ? '' : 'none';
+                    });
+                }
             } catch(e) {
                 window.canViewSensitiveData = isMasterUid;
                 window.userRole = isMasterUid ? 'admin' : 'funcionario';
+                document.querySelectorAll('[data-permission="admin"]').forEach(function(el) {
+                    el.style.display = isMasterUid ? '' : 'none';
+                });
             }
-            // Mostrar/ocultar elementos de admin (botao Usuarios, etc)
-            document.querySelectorAll('[data-permission="admin"]').forEach(function(el) {
-                el.style.display = (isMasterUid || window.userRole === 'admin') ? '' : 'none';
-            });
             if (!window.canViewSensitiveData) {
                 document.querySelectorAll('[data-permission="financeiro"]').forEach(el => el.style.display = "none");
             }

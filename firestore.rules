@@ -10,19 +10,19 @@ service cloud.firestore {
     function isAuth() { return request.auth != null; }
     function isOwner(uid) { return request.auth != null && request.auth.uid == uid; }
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
+      allow read: if isOwner(userId) || isAdmin() || (isAuth() && resource.data.createdBy == request.auth.uid);
       allow update: if isOwner(userId) || isAdmin();
       allow create: if isAuth();
       allow delete: if isAdmin();
     }
     match /professionals/{docId} {
       allow read: if true;
-      allow create, update: if isAuth();  // CORRIGIDO: Qualquer usuario autenticado pode criar
+      allow create, update: if isAuth();
       allow delete: if isAdmin();
     }
     match /services/{docId} {
       allow read: if true;
-      allow create, update: if isAuth();  // CORRIGIDO: Qualquer usuario autenticado pode criar
+      allow create, update: if isAuth();
       allow delete: if isAdmin();
     }
     match /clients/{docId} {
@@ -41,7 +41,7 @@ service cloud.firestore {
     }
     match /subscriptions/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow write: if isOwner(userId) || isAdmin();  // CORRIGIDO: Usuario pode criar propria subscription
+      allow write: if isOwner(userId) || isAdmin();
     }
     match /whatsappLogs/{docId} {
       allow read, write: if isAuth();

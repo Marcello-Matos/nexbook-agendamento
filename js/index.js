@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
        FIREBASE CONFIGURATION
        ============================================================ */
    
@@ -28,7 +28,7 @@ async function checkSubscriptionAndRedirect(user) {
         // Verificar se eh funcionario criado pelo admin (tem createdBy)
         const userDoc = await db.collection('users').doc(user.uid).get();
         if (userDoc.exists && userDoc.data().createdBy) {
-            window.location.href = 'boas-vindas.html'; return;
+            window.location.href = 'dashboard.html'; return;
         }
 
         // CORRECAO: Criar trial localmente se a funcao falhar
