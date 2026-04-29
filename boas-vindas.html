@@ -300,53 +300,73 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCCvnw5eBBjUAa0piQ7Njy2t_W4TVZSIwk",
-            authDomain: "nexbook-14d69.firebaseapp.com",
-            projectId: "nexbook-14d69",
-            storageBucket: "nexbook-14d69.firebasestorage.app",
-            messagingSenderId: "445301731220",
-            appId: "1:445301731220:web:500608bc6903aa8a40e981",
-            measurementId: "G-VYH8GSRLZD"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyCCvnw5eBBjUAa0piQ7Njy2t_W4TVZSIwk",
+        authDomain: "nexbook-14d69.firebaseapp.com",
+        projectId: "nexbook-14d69",
+        storageBucket: "nexbook-14d69.firebasestorage.app",
+        messagingSenderId: "445301731220",
+        appId: "1:445301731220:web:500608bc6903aa8a40e981",
+        measurementId: "G-VYH8GSRLZD"
+    };
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-        // Verificar se usuario esta logado
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
+    function calcularDiasRestantes(expiresAt) {
+        const agora = new Date();
+        const expiracao = expiresAt.toDate ? expiresAt.toDate() : new Date(expiresAt);
+        const diffTime = expiracao - agora;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return Math.max(0, diffDays);
+    }
 
-            // Verificar se tem trial ativo
-            const subDoc = await db.collection('subscriptions').doc(user.uid).get();
-            if (!subDoc.exists) {
-                // Criar trial se nao existir
-                const now = firebase.firestore.Timestamp.now();
-                const expires = firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
-                await db.collection('subscriptions').doc(user.uid).set({
-                    status: 'active',
-                    plan: 'trial',
-                    startDate: now,
-                    expiresAt: expires,
-                    updatedAt: now,
-                    trialDays: 7,
-                    automaticTrial: true,
-                    email: user.email || ''
-                });
-            }
-        });
+    function atualizarContador(dias) {
+        const counter = document.getElementById('daysCounter');
+        if (!counter) return;
+        
+        if (dias <= 0) {
+            counter.textContent = 'EXPIRADO';
+            counter.style.color = '#ff4d4f';
+            setTimeout(() => window.location.href = 'pagamento.html', 2000);
+        } else if (dias === 1) {
+            counter.textContent = '1 DIA';
+        } else {
+            counter.textContent = dias + ' DIAS';
+        }
+    }
 
-        function goToDashboard() {
-            window.location.href = 'dashboard.html';
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+            window.location.href = 'index.html';
+            return;
         }
 
-        function showPlans() {
-            window.location.href = 'pagamento.html';
+        const subDoc = await db.collection('subscriptions').doc(user.uid).get();
+        if (!subDoc.exists) {
+            const now = firebase.firestore.Timestamp.now();
+            const expires = firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+            await db.collection('subscriptions').doc(user.uid).set({
+                status: 'active', plan: 'trial', startDate: now,
+                expiresAt: expires, updatedAt: now, trialDays: 7,
+                automaticTrial: true, email: user.email || ''
+            });
+            atualizarContador(7);
+        } else {
+            const sub = subDoc.data();
+            if (sub.expiresAt) {
+                const diasRestantes = calcularDiasRestantes(sub.expiresAt);
+                atualizarContador(diasRestantes);
+                if (diasRestantes <= 0) {
+                    setTimeout(() => window.location.href = 'pagamento.html', 3000);
+                }
+            }
         }
-    </script>
+    });
+
+    function goToDashboard() { window.location.href = 'dashboard.html'; }
+    function showPlans() { window.location.href = 'pagamento.html'; }
+</script>
 </body>
 </html>
