@@ -1437,6 +1437,7 @@ async function loadDashboardData() {
     
     try {
         const professionalFilter = document.getElementById('professionalFilter')?.value || 'all';
+        const serviceFilter = document.getElementById('serviceFilter')?.value || 'all';
         const _dashUid = window.masterUserId || currentUserId;
         let appointmentsQuery = db.collection('appointments').where('userId', '==', _dashUid);
         
