@@ -579,6 +579,11 @@ async function verifyAccess() {
                 window.currentUserId = userData.createdBy;
                 window.masterUserId = userData.createdBy;
             }
+            if (userData.createdBy) {
+                currentUserId = userData.createdBy;
+                window.currentUserId = userData.createdBy;
+                window.masterUserId = userData.createdBy;
+            }
         }
         
         secureDB.getCsrfToken();
@@ -1432,12 +1437,11 @@ async function loadDashboardData() {
     
     try {
         const professionalFilter = document.getElementById('professionalFilter')?.value || 'all';
-        const serviceFilter = document.getElementById('serviceFilter')?.value || 'all';
+        const _dashUid = window.masterUserId || currentUserId;
+        let appointmentsQuery = db.collection('appointments').where('userId', '==', _dashUid);
         
         secureLog('Carregando dashboard com filtros:', { professionalFilter, serviceFilter });
         
-        // Buscar agendamentos
-        let appointmentsQuery = db.collection('appointments').where('userId', '==', currentUserId);
         
         if (professionalFilter !== 'all') {
             appointmentsQuery = appointmentsQuery.where('professionalId', '==', professionalFilter);
@@ -1564,8 +1568,8 @@ async function loadDashboardData() {
         showNotification('Erro ao carregar dashboard', 'error');
     }
 }
-
 function updateDashboardUI(data) {
+
     document.getElementById('todayCount').textContent = data.todayAppointments;
     document.getElementById('revenueValue').textContent = formatCurrency(data.todayRevenue);
     document.getElementById('clientsValue').textContent = data.activeClients;
@@ -2411,14 +2415,15 @@ function initializeCalendar() {
 // FUNÇÃO PARA CARREGAR EVENTOS DO CALENDÁRIO
 // ============================================
 async function loadCalendarEvents(fetchInfo, successCallback, failureCallback) {
-    if (!currentUserId) {
+    const queryUserId = window.masterUserId || currentUserId;
+    if (!queryUserId) {
         successCallback([]);
         return;
     }
     
     try {
         const snapshot = await db.collection('appointments')
-            .where('userId', '==', currentUserId)
+            .where('userId', '==', queryUserId)
             .where('date', '>=', fetchInfo.startStr.split('T')[0])
             .where('date', '<=', fetchInfo.endStr.split('T')[0])
             .orderBy('date', 'asc')
@@ -4908,6 +4913,14 @@ auth.onAuthStateChanged(async user => {
                 const firestoreRole = userData.role || (isMasterUid ? 'admin' : 'funcionario');
                 window.userRole = firestoreRole;
                 window.canViewSensitiveData = isMasterUid || (userData.canViewSensitiveData === true) || firestoreRole === 'admin';
+                // Funcionario usa userId do master para todas as queries
+                if (userData.createdBy && firestoreRole === 'funcionario' && !isMasterUid) {
+                    currentUserId = userData.createdBy;
+                    window.currentUserId = userData.createdBy;
+                    window.masterUserId = userData.createdBy;
+                } else {
+                    window.masterUserId = user.uid;
+                }
                 // Funcionario usa userId do master para ver os dados do sistema
                 if (userData.createdBy && firestoreRole === 'funcionario' && !isMasterUid) {
                     window.isEmployee = true;
