@@ -574,6 +574,11 @@ async function verifyAccess() {
             
             // Se foi criado pelo admin (tem createdBy), eh funcionario e nao precisa pagar
             window.isEmployee = !!userData.createdBy;
+            if (userData.createdBy) {
+                currentUserId = userData.createdBy;
+                window.currentUserId = userData.createdBy;
+                window.masterUserId = userData.createdBy;
+            }
         }
         
         secureDB.getCsrfToken();
@@ -4903,6 +4908,16 @@ auth.onAuthStateChanged(async user => {
                 const firestoreRole = userData.role || (isMasterUid ? 'admin' : 'funcionario');
                 window.userRole = firestoreRole;
                 window.canViewSensitiveData = isMasterUid || (userData.canViewSensitiveData === true) || firestoreRole === 'admin';
+                // Funcionario usa userId do master para ver os dados do sistema
+                if (userData.createdBy && firestoreRole === 'funcionario' && !isMasterUid) {
+                    window.isEmployee = true;
+                    window.masterUserId = userData.createdBy;
+                    currentUserId = userData.createdBy;
+                    window.currentUserId = userData.createdBy;
+                } else {
+                    window.isEmployee = false;
+                    window.masterUserId = user.uid;
+                }
                 // Menus por permissao (dentro do try para acessar userData)
                 var ehFunc = firestoreRole === 'funcionario' && !isMasterUid;
                 var perms = userData.permissions || {};
