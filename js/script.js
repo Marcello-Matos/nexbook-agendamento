@@ -1575,9 +1575,9 @@ function updateDashboardUI(data) {
     document.getElementById('clientsValue').textContent = data.activeClients;
     
     let monthlyCard = document.getElementById('monthlyRevenueCard');
-    if (monthlyCard && window.canViewSensitiveData === false) { monthlyCard.style.display = 'none'; return; }
-    if (!monthlyCard && window.canViewSensitiveData === false) { return; }
-    if (!monthlyCard) {
+    if (window.canViewSensitiveData === false) {
+        if (monthlyCard) monthlyCard.style.display = 'none';
+    } else if (!monthlyCard) {
         const statsGrid = document.querySelector('.stats-grid');
         if (statsGrid) {
             const newCard = document.createElement('div');
@@ -1596,8 +1596,6 @@ function updateDashboardUI(data) {
             `;
             statsGrid.appendChild(newCard);
         }
-    } else if (window.canViewSensitiveData === false) {
-        if (monthlyCard) monthlyCard.style.display = 'none';
     } else {
         const valueElement = document.getElementById('monthlyRevenueValue');
         if (valueElement) {
