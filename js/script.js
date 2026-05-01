@@ -1570,6 +1570,13 @@ async function loadDashboardData() {
     }
 }
 function updateDashboardUI(data) {
+    const summary = document.getElementById('dashboardSummary');
+    if (summary) {
+        const n = data.todayAppointments || 0;
+        const nome = window._dashFirstName || '';
+        const agLabel = n === 1 ? '1 agendamento' : n + ' agendamentos';
+        summary.textContent = 'Hoje voce tem ' + agLabel + '. Bom trabalho' + (nome ? ', ' + nome : '') + '!';
+    }
 
     document.getElementById('todayCount').textContent = data.todayAppointments;
     document.getElementById('revenueValue').textContent = formatCurrency(data.todayRevenue);
@@ -2167,10 +2174,17 @@ function updatePlansChart(clients) {
 
 function updateUserInterface(user) {
     const displayName = sanitizeString(user.displayName || user.email?.split('@')[0] || 'Admin');
+    const firstName = displayName.split(' ')[0];
     document.getElementById('userNameDisplay').textContent = displayName;
     
     let initials = displayName.substring(0, 2).toUpperCase();
     document.getElementById('userAvatar').textContent = initials;
+
+    const greet = document.getElementById('dashboardGreeting');
+    if (greet) greet.textContent = 'Ola, ' + firstName + '!';
+    const summary = document.getElementById('dashboardSummary');
+    if (summary) summary.textContent = 'Bem-vindo ao seu painel. Carregando dados...';
+    window._dashFirstName = firstName;
 }
 
 // ============================================
