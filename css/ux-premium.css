@@ -1,0 +1,108 @@
+﻿/* ============================================================
+   UX PREMIUM - Nexbook
+   ============================================================ */
+
+/* 1. RIPPLE */
+.ripple-host { position: relative; overflow: hidden; }
+.ripple {
+    position: absolute; border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    transform: scale(0);
+    animation: ripple-anim 0.6s linear forwards;
+    pointer-events: none; z-index: 9;
+}
+@keyframes ripple-anim { to { transform: scale(4); opacity: 0; } }
+
+/* 2. SKELETON */
+.skeleton {
+    background: linear-gradient(90deg,var(--border-color,#e2e8f0) 25%,var(--background-tertiary,#f1f5f9) 50%,var(--border-color,#e2e8f0) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s infinite;
+    border-radius: 8px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* 3. BOTOES */
+.btn-primary { transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease !important; }
+.btn-primary:hover:not(:disabled) { transform: translateY(-2px) scale(1.03); box-shadow: 0 10px 28px rgba(79,70,229,0.38) !important; }
+.btn-primary:active:not(:disabled) { transform: scale(0.96) !important; }
+.btn-secondary { transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease !important; }
+.btn-secondary:hover:not(:disabled) { transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 18px rgba(0,0,0,0.12) !important; }
+
+/* 4. STAT CARDS */
+.stat-card { transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease !important; will-change: transform; }
+.stat-card:hover { transform: translateY(-5px) !important; box-shadow: 0 20px 40px rgba(79,70,229,0.14) !important; }
+.stat-icon { transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1) !important; }
+.stat-card:hover .stat-icon { transform: rotate(-8deg) scale(1.15) !important; }
+.stat-value { font-variant-numeric: tabular-nums; transition: color 0.3s ease; }
+
+/* 5. NAVIGATION */
+.nav-item { transition: background 0.18s ease !important; position: relative; }
+.nav-item::after {
+    content: ''; position: absolute; left: 0; top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    width: 3px; height: 60%; background: #a5b4fc;
+    border-radius: 0 3px 3px 0;
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.nav-item.active::after, .nav-item:hover::after { transform: translateY(-50%) scaleY(1); }
+
+/* 6. INPUTS */
+input:not([type=checkbox]):not([type=radio]), select, textarea {
+    transition: border-color 0.18s ease, box-shadow 0.18s ease !important;
+}
+input:focus:not([type=checkbox]):not([type=radio]), select:focus, textarea:focus {
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.18) !important;
+    border-color: var(--primary,#4f46e5) !important;
+    outline: none;
+}
+
+/* 7. APPOINTMENT ITEMS */
+.appointment-item { transition: border-left-color 0.18s ease, background 0.18s ease, transform 0.18s ease !important; border-left: 3px solid transparent !important; }
+.appointment-item:hover { border-left-color: var(--primary,#4f46e5) !important; transform: translateX(5px) !important; background: var(--background-tertiary,#f1f5f9) !important; }
+
+/* 8. VIEW FADE */
+.view.active { animation: view-enter 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes view-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 9. MODAL */
+.modal-content { animation: modal-enter 0.28s cubic-bezier(0.34,1.56,0.64,1) both !important; }
+@keyframes modal-enter { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
+
+/* 10. NOTIFICACOES */
+.google-notification { animation: toast-in 0.4s cubic-bezier(0.34,1.56,0.64,1) both !important; }
+@keyframes toast-in { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* 11. HEADER GRADIENTE */
+#dashboardGreeting {
+    background: linear-gradient(135deg,var(--primary,#4f46e5),var(--secondary,#10b981));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    font-size: 1.6rem !important; font-weight: 700 !important;
+}
+#dashboardSummary { font-size: 0.92rem; color: var(--text-secondary,#475569); margin-top: 2px; }
+
+/* 12. SCROLL REVEAL */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* 13. STATUS BADGE */
+.status-badge.pending { animation: badge-pulse 2.4s ease-in-out infinite; }
+@keyframes badge-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+/* 14. AVATAR */
+.user-avatar { transition: box-shadow 0.2s ease, transform 0.2s ease; cursor: pointer; }
+.user:hover .user-avatar { box-shadow: 0 0 0 3px rgba(79,70,229,0.4); transform: scale(1.07); }
+
+/* 15. TABELA */
+tbody tr { transition: background 0.15s ease !important; }
+tbody tr:hover { background: var(--background-tertiary,#f1f5f9) !important; cursor: pointer; }
+
+/* 16. SIDEBAR */
+.sidebar { background: linear-gradient(180deg,#1e1b4b 0%,#312e81 45%,#1e1b4b 100%) !important; }
+
+/* 17. SPINNER */
+.ux-spinner { width:36px;height:36px;border:3px solid var(--border-color,#e2e8f0);border-top-color:var(--primary,#4f46e5);border-radius:50%;animation:spin 0.8s linear infinite;margin:24px auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 18. FOCUS VISIBLE */
+:focus-visible { outline: 2px solid var(--primary,#4f46e5); outline-offset: 2px; border-radius: 4px; }
