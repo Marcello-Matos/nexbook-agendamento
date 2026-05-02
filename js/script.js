@@ -4122,7 +4122,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
         document.getElementById(viewId).classList.add('active');
         
         const titles = {
-            dashboard: 'Dashboard Inteligente',
+            dashboard: null,
             calendar: 'Calendário de Agendamentos',
             professionals: 'Gerenciar Profissionais',
             services: 'Gerenciar Serviços',
@@ -4133,7 +4133,14 @@ document.querySelectorAll('.nav-item').forEach(item => {
             users: 'Usuários'
         };
         
-        document.querySelector('.page-title h1').textContent = titles[this.dataset.view] || this.dataset.view;
+                const _h1 = document.querySelector('.page-title h1');
+        const _p  = document.getElementById('dashboardSummary') || document.querySelector('.page-title p');
+        if (this.dataset.view === 'dashboard') {
+            if (_h1) { _h1.id = 'dashboardGreeting'; _h1.textContent = 'Ol\u00e1, ' + (window._dashFirstName || '') + '!'; }
+        } else {
+            if (_h1) { _h1.removeAttribute('id'); _h1.textContent = titles[this.dataset.view] || this.dataset.view; }
+            if (_p && _p.id === 'dashboardSummary')  { _p.textContent = ''; }
+        }
         
         if (this.dataset.view === 'reports') {
             loadReportsData();
